@@ -1,4 +1,6 @@
-use actix_web::{App, HttpResponse, HttpServer, Responder, get};
+pub mod api;
+
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
 use clap::Parser;
 use env_logger::Env;
 use rqlite_client::{embed_migrations, Connection};
@@ -35,13 +37,18 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Starting mako on {}:{}", cli.host, cli.port);
 
-    HttpServer::new(|| App::new().service(hello))
+    HttpServer::new(|| App::new().configure(init_app))
         .bind((cli.host, cli.port))?
         .run()
         .await
 }
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+fn init_app(cfg: &mut web::ServiceConfig) {
+    api::configure(cfg);
+    cfg.service(health);
+}
+
+#[get("/health")]
+async fn health() -> impl Responder {
+    HttpResponse::Ok().body("OK")
 }
