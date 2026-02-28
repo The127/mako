@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  rqlite:
+    command: ["-fk"]
+    image: rqlite/rqlite
+    ports:
+      - "4003:4001"
