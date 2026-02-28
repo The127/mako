@@ -1,6 +1,7 @@
 pub mod api;
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
+use actix_web::web::Data;
 use clap::Parser;
 use env_logger::Env;
 use rqlite_client::{embed_migrations, Connection};
@@ -25,7 +26,7 @@ pub struct MakoCli {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let env = Env::default()
-        .filter_or("MAKO_LOG_LEVEL", "info")
+        .filter_or("MAKO_LOG_LEVEL", "debug")
         .write_style_or("MAKO_LOG_STYLE", "always");
 
     env_logger::init_from_env(env);
@@ -37,7 +38,7 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Starting mako on {}:{}", cli.host, cli.port);
 
-    HttpServer::new(|| App::new().configure(init_app))
+    HttpServer::new(move|| App::new().configure(init_app).app_data(Data::new(con.clone())))
         .bind((cli.host, cli.port))?
         .run()
         .await
