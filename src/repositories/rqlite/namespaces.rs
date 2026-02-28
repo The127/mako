@@ -33,10 +33,16 @@ struct NamespaceRepositoryImpl {
 
 impl NamespaceRepository for NamespaceRepositoryImpl {
     fn insert(&self, namespace: Namespace) {
+        let mapped = NamespaceModel::from(&namespace);
+
         let mut tx = self.transaction.borrow_mut();
-        tx.push_sql_values(&[
-            "insert into namespaces values (?)",
-            namespace.path().as_str(),
+        tx.push_sql_values(&["
+            insert into namespaces (
+                path
+            ) values (
+                ?
+            )",
+            &mapped.path,
         ]);
     }
 }
