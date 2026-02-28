@@ -1,5 +1,5 @@
 ### Create a new kv
-POST http://localhost:8080/values?create_missing=true
+POST http://localhost:8080/values?create_namespace=true
 Content-Type: application/json
 
 {

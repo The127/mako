@@ -17,8 +17,8 @@ struct CreateValueDto {
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct CreateValueQueryParams {
-    #[serde(rename = "create_missing")]
-    create_missing: Option<bool>,
+    #[serde(rename = "create_namespace")]
+    create_namespace: Option<bool>,
 }
 
 #[post("/values")]
@@ -33,7 +33,7 @@ async fn create_value(
         get(&request_dto.path);
 
     if namespace.is_none() {
-        if params.create_missing.unwrap_or(false) {
+        if params.create_namespace.unwrap_or(false) {
             ctx.namespaces().insert(Namespace::new(request_dto.path.clone()));
         }else{
             return HttpResponse::NotFound().body(
