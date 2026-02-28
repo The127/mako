@@ -3,7 +3,7 @@ POST localhost:8080/namespaces
 Content-Type: application/json
 
 {
-    "path": "foo/bar"
+    "path": "foo/bar2"
 }
 
 ### List all namespaces
