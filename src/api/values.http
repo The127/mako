@@ -1,0 +1,9 @@
+### Create a new kv
+POST http://localhost:8080/values?create_missing=true
+Content-Type: application/json
+
+{
+  "path": "foo/bar67",
+  "key": "k",
+  "value": "v"
+}

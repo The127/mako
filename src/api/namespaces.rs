@@ -1,8 +1,7 @@
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
-use actix_web::{HttpResponse, Responder, get, post, web};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use rqlite_client::ureq::serde;
-use rqlite_client::{Mapping, response};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct CreateNamespaceDto {

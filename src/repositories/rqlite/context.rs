@@ -5,6 +5,8 @@ use rqlite_client::{Connection, Mapping, response};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
+use crate::repositories::rqlite::values::new_value_repository;
+use crate::repositories::values::ValueRepository;
 
 pub struct Transaction {
     queries: Vec<Vec<serde_json::Value>>,
@@ -29,15 +31,17 @@ struct DbContextImpl {
     transaction: Rc<RefCell<Transaction>>,
 
     namespaces: Box<dyn NamespaceRepository>,
+    values: Box<dyn ValueRepository>,
 }
 
 pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
     let transaction = Rc::new(RefCell::new(Transaction { queries: vec![] }));
 
     Box::new(DbContextImpl {
-        conn,
+        conn: conn.clone(),
         transaction: transaction.clone(),
-        namespaces: new_namespace_repository(transaction.clone()),
+        namespaces: new_namespace_repository(transaction.clone(), conn.clone()),
+        values: new_value_repository(transaction.clone()),
     })
 }
 
@@ -53,14 +57,11 @@ impl DbContext for DbContextImpl {
 
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
-        if let Some(Mapping::Standard(success)) = response_result.results().next() {
-            let row = 0;
-            let col = 0;
-            if let Some(rows_found) = &success.value(row, col) {
-                log::info!("Rows found: {}", rows_found);
+        match response_result.results().next() {
+            Some(Mapping::Error(error)) => {
+                log::error!("Error saving changes namespace: {}", error);
             }
-        } else if let Some(Mapping::Error(error)) = response_result.results().next() {
-            log::error!("Error creating namespace: {}", error);
+            _ => {}
         }
 
         tx.clear()
@@ -68,5 +69,9 @@ impl DbContext for DbContextImpl {
 
     fn namespaces(&self) -> &dyn NamespaceRepository {
         self.namespaces.as_ref()
+    }
+
+    fn values(&self) -> &dyn ValueRepository {
+        self.values.as_ref()
     }
 }
