@@ -1,14 +1,15 @@
 create table namespaces( \
-    name text not null, \
+    path text not null, \
 \
-    primary key (name) \
+    primary key (path) \
 );
+
 create table "values" \
  ( \
-    namespace text not null, \
+    path text not null, \
     key text not null, \
     value text not null, \
 \
-    primary key (namespace, key), \
-    foreign key (namespace) references namespaces(name) \
+    primary key (path, key), \
+    foreign key (path) references namespaces(path) \
 );

@@ -1,0 +1,10 @@
+### Create a namespace
+POST localhost:8080/namespaces
+Content-Type: application/json
+
+{
+    "path": "foo/bar"
+}
+
+### List all namespaces
+GET localhost:8080/namespaces
