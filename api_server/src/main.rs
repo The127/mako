@@ -1,5 +1,6 @@
 pub mod api;
 pub mod repositories;
+pub mod extractors;
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use actix_web::web::Data;

@@ -2,12 +2,18 @@ use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{get, post, web, HttpResponse, Responder};
 use shared::dtos::namespaces::CreateNamespaceDto;
+use crate::extractors::auth::AuthUser;
 
 #[post("/namespaces")]
 async fn create_namespace(
     request_dto: web::Json<CreateNamespaceDto>,
     con: web::Data<rqlite_client::Connection>,
+    user: AuthUser,
 ) -> Result<HttpResponse, actix_web::error::Error> {
+    if !user.is_authenticated() {
+        return Err(actix_web::error::ErrorUnauthorized("Not authenticated"));
+    }
+
     let mut ctx = new_context(con.into_inner());
 
     ctx.namespaces()

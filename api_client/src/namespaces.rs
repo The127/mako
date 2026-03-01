@@ -12,9 +12,10 @@ impl<'a> NamespaceClient<'a> {
     }
 
     pub async fn create(&self, dto: CreateNamespaceDto) -> Result<(), ApiClientError> {
-        let url = format!("{}/namespaces", self.client.base_url);
-        let resp = self.client.client
-            .post(&url)
+        let url = "namespaces";
+
+        let resp = self.client
+            .request(reqwest::Method::POST, &url)
             .json(&dto)
             .send()
             .await?;

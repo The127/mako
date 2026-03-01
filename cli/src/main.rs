@@ -3,6 +3,7 @@ use env_logger::Env;
 use mako_client::MakoApiClient;
 use shared::dtos::namespaces::CreateNamespaceDto;
 use anyhow::Result;
+use mako_client::auth::ApiTokenAuthProvider;
 
 #[derive(Parser)]
 #[command(name = "mako", version = "v0.1.0", about = "The mako kv cli binary.", long_about = None)]
@@ -39,7 +40,15 @@ async fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let client = MakoApiClient::new(cli.url);
+    let admin_token = std::env::var("MAKO_ADMIN_TOKEN");
+    let client = match admin_token {
+        Ok(token) => MakoApiClient::new(cli.url, Box::new(ApiTokenAuthProvider::new(token))),
+        Err(_) => {
+            log::error!("No admin token found, set MAKO_ADMIN_TOKEN env variable");
+            std::process::exit(1);
+        }
+    };
+
 
     match cli.command {
         Commands::Namespaces { command } => {
