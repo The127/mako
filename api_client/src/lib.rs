@@ -1,6 +1,7 @@
 pub mod namespaces;
 pub mod errors;
 pub mod auth;
+pub mod values;
 
 use reqwest::Client;
 
