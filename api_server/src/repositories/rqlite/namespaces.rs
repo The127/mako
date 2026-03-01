@@ -91,4 +91,14 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
     fn exists(&self, path: &str) -> Result<bool, Box<dyn std::error::Error>> {
         Ok(self.get(path)?.is_some())
     }
+
+    fn delete_if_exists(&self, path: &str) {
+        let mut tx = self.transaction.borrow_mut();
+        tx.push_sql_values(&[
+            "
+            delete from namespaces where path = ?
+            ",
+            path,
+        ]);
+    }
 }

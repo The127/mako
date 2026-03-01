@@ -19,5 +19,5 @@ create table "values" ( \
     value text not null, \
 \
     primary key (path, key), \
-    foreign key (path) references namespaces (path) \
+    foreign key (path) references namespaces (path) on delete cascade \
 );

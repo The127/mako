@@ -5,3 +5,7 @@ Authorization: ApiToken test
 ### List all values in namespace
 GET localhost:8080/v1/namespaces/foo/bar
 Authorization: ApiToken test
+
+### Delete a namespace
+DELETE localhost:8080/v1/namespaces/foo/bar
+Authorization: ApiToken test

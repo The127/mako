@@ -109,7 +109,7 @@ impl ValueRepository for ValueRepositoryImpl {
             path,
         ]);
 
-        let response_result = response::query::Query::from(query.request_run().unwrap());
+        let response_result = response::query::Query::from(query.request_run()?);
 
         response_result.into_iter().map(|mapping| {
             match mapping {
