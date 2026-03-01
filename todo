@@ -1,4 +1,3 @@
-- kv version tracking
 - kv caching
 
 - add oidc authentication

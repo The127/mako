@@ -17,7 +17,7 @@ create table "values" ( \
     path  text not null, \
     key   text not null, \
     value text not null, \
-    version bigint not null, \
+    version integer not null, \
 \
     primary key (path, key), \
     foreign key (path) references namespaces (path) on delete cascade \

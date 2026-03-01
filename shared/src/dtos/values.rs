@@ -20,6 +20,9 @@ pub struct ValueDto {
 
     #[serde(rename = "value")]
     pub value: String,
+
+    #[serde(rename = "version")]
+    pub version: u64,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]

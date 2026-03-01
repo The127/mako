@@ -9,6 +9,7 @@ struct ValueModel {
     path: String,
     key: String,
     value: String,
+    version: i64,
 }
 
 impl ValueModel {
@@ -16,11 +17,13 @@ impl ValueModel {
         let path = row[0].as_str().unwrap();
         let key = row[1].as_str().unwrap();
         let value = row[2].as_str().unwrap();
+        let version = row[3].as_i64().unwrap();
 
         ValueModel {
             path: path.to_string(),
             key: key.to_string(),
             value: value.to_string(),
+            version,
         }
     }
 }
@@ -31,13 +34,14 @@ impl From<&Value> for ValueModel {
             path: value.path(),
             key: value.key(),
             value: value.value(),
+            version: value.version(),
         }
     }
 }
 
 impl From<ValueModel> for Value {
     fn from(value: ValueModel) -> Self {
-        Value::new(value.path, value.key, value.value)
+        Value::new_with_version(value.path, value.key, value.value, value.version)
     }
 }
 
@@ -62,28 +66,34 @@ impl ValueRepository for ValueRepositoryImpl {
             insert into \"values\" (
                 path,
                 key,
-                value
+                value,
+                version
             ) values (
                 ?,
                 ?,
-                ?
-            ) on conflict (path, key) do update set value = excluded.value",
+                ?,
+                1
+            )
+            on conflict (path, key)
+            do update set
+            value = excluded.value,
+            version = version + 1",
             &mapped.path,
             &mapped.key,
-            &mapped.value,
+            &mapped.value
         ]);
     }
 
     fn get(&self, path: &str, key: &str) -> Result<Option<Value>, Box<dyn std::error::Error>> {
         let query = self.conn.query().push_sql_values(&[
             "
-            select path, key, value from \"values\" where path = ? and key = ?
+            select path, key, value, version from \"values\" where path = ? and key = ?
             ",
             path,
             key,
         ]);
 
-        let response_result = response::query::Query::from(query.request_run().unwrap());
+        let response_result = response::query::Query::from(query.request_run()?);
 
         match response_result.into_iter().next() {
             Some(Mapping::Standard(standard)) => {
@@ -107,7 +117,7 @@ impl ValueRepository for ValueRepositoryImpl {
     fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>> {
         let query = self.conn.query().push_sql_values(&[
             "
-            select path, key, value from \"values\" where path = ?
+            select path, key, value, version from \"values\" where path = ?
             ",
             path,
         ]);
@@ -123,6 +133,7 @@ impl ValueRepository for ValueRepositoryImpl {
                     Ok(Vec::new())
                 }
             },
+            Some(Mapping::Empty(empty)) => Ok(Vec::new()),
             _ => unreachable!(),
         }
     }
@@ -135,6 +146,6 @@ impl ValueRepository for ValueRepositoryImpl {
             ",
             path,
             key,
-        ]);       
+        ]);
     }
 }

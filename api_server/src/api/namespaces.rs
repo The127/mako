@@ -80,6 +80,7 @@ async fn list_namespace_kvs(
             .map(|v| ValueDto {
                 key: v.key(),
                 value: v.value(),
+                version: v.version() as u64,
             })
             .collect(),
     }))

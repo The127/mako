@@ -53,6 +53,7 @@ async fn get_value(
         Some(value) => Ok(HttpResponse::Ok().json(ValueDto{
             key: value.key(),
             value: value.value(),
+            version: value.version() as u64,
         })),
         None => Ok(HttpResponse::NotFound().finish()),
     }
@@ -78,5 +79,5 @@ async fn delete_value(
 
     ctx.save_changes()?;
 
-    Ok(HttpResponse::NoContent().finish())   
+    Ok(HttpResponse::NoContent().finish())
 }
