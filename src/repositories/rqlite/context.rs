@@ -46,7 +46,7 @@ pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
 }
 
 impl DbContext for DbContextImpl {
-    fn save_changes(&mut self) {
+    fn save_changes(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let mut tx = self.transaction.borrow_mut();
 
         let mut query = self.conn.execute().enable_transaction();
@@ -58,13 +58,12 @@ impl DbContext for DbContextImpl {
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
         match response_result.results().next() {
-            Some(Mapping::Error(error)) => {
-                log::error!("Error saving changes namespace: {}", error);
-            }
-            _ => {}
+            Some(Mapping::Error(error)) => return Err(Box::new(error.clone())),
+            _ => {},
         }
 
-        tx.clear()
+        tx.clear();
+        Ok(())
     }
 
     fn namespaces(&self) -> &dyn NamespaceRepository {

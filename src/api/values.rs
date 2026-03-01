@@ -15,7 +15,6 @@ struct CreateValueDto {
     value: String,
 }
 
-
 #[post("/values")]
 async fn create_value(
     request_dto: web::Json<CreateValueDto>,
@@ -35,7 +34,7 @@ async fn create_value(
     ctx.values()
         .insert(Value::new(request_dto.path.clone(), request_dto.key.clone(), request_dto.value.clone()));
 
-    ctx.save_changes();
+    ctx.save_changes().unwrap();
 
     HttpResponse::NoContent().finish()
 }

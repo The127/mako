@@ -19,7 +19,7 @@ async fn create_namespace(
     ctx.namespaces()
         .insert(Namespace::new(request_dto.path.clone()));
 
-    ctx.save_changes();
+    ctx.save_changes().unwrap();
 
     HttpResponse::NoContent().finish()
 }
