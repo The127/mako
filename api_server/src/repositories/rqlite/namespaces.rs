@@ -11,8 +11,8 @@ struct NamespaceModel {
 }
 
 impl NamespaceModel {
-    fn scan(row: &Standard) -> Self {
-        let path = row.value(0, 0).unwrap();
+    fn scan(row: &Vec<serde_json::Value>) -> Self {
+        let path = row[0].as_str().unwrap();
 
         NamespaceModel {
             path: path.to_string(),
@@ -74,9 +74,13 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
         match response_result.into_iter().next() {
-            Some(Mapping::Standard(row)) => {
-                if let Some(_) = &row.values {
-                    Ok(Some(Namespace::from(NamespaceModel::scan(&row))))
+            Some(Mapping::Standard(standard)) => {
+                if let Some(mapping) = &standard.values {
+                    if let Some(row) = mapping.first() {
+                        Ok(Some(Namespace::from(NamespaceModel::scan(&row))))
+                    }else {
+                        Ok(None)
+                    }
                 } else {
                     Ok(None)
                 }
