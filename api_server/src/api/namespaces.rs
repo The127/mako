@@ -30,7 +30,7 @@ async fn create_namespace(
 }
 
 #[get("/v1/namespaces/{path:.+}")]
-async fn list_namespaces(
+async fn list_namespace_kvs(
     ns: web::Path<NamespacePath>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
