@@ -1,10 +1,9 @@
+use crate::repositories::rqlite::context::Transaction;
+use crate::repositories::values::{Value, ValueRepository};
+use rqlite_client::{response, Connection, Mapping};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
-use rqlite_client::{response, Connection, Mapping};
-use rqlite_client::response::mapping::Standard;
-use crate::repositories::rqlite::context::Transaction;
-use crate::repositories::values::{Value, ValueRepository};
 
 struct ValueModel {
     path: String,
@@ -13,10 +12,10 @@ struct ValueModel {
 }
 
 impl ValueModel {
-    fn scan(row: &Standard) -> Self {
-        let path = row.value(0, 0).unwrap();
-        let key = row.value(0, 1).unwrap();
-        let value = row.value(0, 2).unwrap();
+    fn scan(row: &Vec<serde_json::Value>) -> Self {
+        let path = row[0].as_str().unwrap();
+        let key = row[1].as_str().unwrap();
+        let value = row[2].as_str().unwrap();
 
         ValueModel {
             path: path.to_string(),
@@ -87,9 +86,13 @@ impl ValueRepository for ValueRepositoryImpl {
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
         match response_result.into_iter().next() {
-            Some(Mapping::Standard(row)) => {
-                if let Some(_) = &row.values {
-                    Ok(Some(Value::from(ValueModel::scan(&row))))
+            Some(Mapping::Standard(standard)) => {
+                if let Some(mapping) = &standard.values {
+                    if let Some(row) = mapping.first() {
+                        Ok(Some(Value::from(ValueModel::scan(row))))
+                    }else {
+                        Ok(None)
+                    }
                 } else {
                     Ok(None)
                 }
@@ -111,12 +114,16 @@ impl ValueRepository for ValueRepositoryImpl {
 
         let response_result = response::query::Query::from(query.request_run()?);
 
-        response_result.into_iter().map(|mapping| {
-            match mapping {
-                Mapping::Error(err) => Err(Box::<dyn std::error::Error>::from(err)),
-                Mapping::Standard(row) => Ok(Value::from(ValueModel::scan(&row))),
-                _ => unreachable!(),
-            }
-        }).collect()
+        match response_result.into_iter().next() {
+            Some(Mapping::Error(err)) => Err(Box::<dyn std::error::Error>::from(err)),
+            Some(Mapping::Standard(standard)) => {
+                if let Some(mapping) = &standard.values {
+                    Ok(mapping.iter().map(|row| Value::from(ValueModel::scan(row))).collect())
+                }else{
+                    Ok(Vec::new())
+                }
+            },
+            _ => unreachable!(),
+        }
     }
 }
