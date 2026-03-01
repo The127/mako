@@ -6,3 +6,29 @@ services:
     image: rqlite/rqlite
     ports:
       - "4003:4001"
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:z
+    ports:
+      - "5488:5432"
+
+  keyline:
+    image: ghcr.io/the127/keyline:dev-618
+    ports:
+      - "15081:80"
+    entrypoint: ["/app/api", "--environment", "DEVELOPMENT", "--config=/app/config.yaml"]
+    volumes:
+      - ./keyline-config.yaml:/app/config.yaml:z
+
+  keyline-ui:
+    image: ghcr.io/the127/keyline-ui:v0.2.0
+    ports:
+      - "15080:80"
+    environment:
+      KEYLINE_API_URL: http://localhost:15081
+      KEYLINE_HOST: http://localhost:15080

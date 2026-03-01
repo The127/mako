@@ -1,0 +1,50 @@
+server:
+  host: "0.0.0.0"
+  port: 80
+  externalUrl: "http://localhost:15081"
+  allowedOrigins:
+    - "http://localhost:15080"
+frontend:
+  externalUrl: "http://localhost:15080"
+database:
+  mode: postgres
+  postgres:
+    username: "user"
+    host: "db"
+    port: 5432
+    sslMode: "disable"
+    password: "password"
+keyStore:
+  mode: directory
+  directory:
+    path: "/keys"
+cache:
+  mode: memory
+leaderElection:
+  mode: none
+initialVirtualServer:
+  enableRegistration: false
+  createAdmin: true
+  createSystemAdminRole: true
+  admin:
+    username: admin
+    displayName: Admin
+    primaryEmail: foo@bar.com
+    passwordHash: "$argon2id$v=19$m=16,t=2,p=1$MTIzNDU2Nzg$QWu7e+sjG5knAdNLoKdLDg"
+    roles:
+      - mako:admin
+  projects:
+    - slug: "mako"
+      name: "Mako"
+      description: "Mako dev project"
+      applications:
+        - name: "mako-app"
+          displayName: "Mako App"
+          type: "public"
+          redirectUris:
+            - "http://localhost:5173/raccoons/oidc/login"
+          postLogoutRedirectUris:
+            - "http://localhost:5173/raccoons/oidc/logout"
+      roles:
+        - name: "admin"
+          description: "Mako Admin"
