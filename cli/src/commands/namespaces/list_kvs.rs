@@ -17,14 +17,17 @@ struct ValueListOutputItem {
 
     #[serde(rename = "value")]
     value: String,
+
+    #[serde(rename = "version")]
+    version: u64,
 }
 
 impl Output for ValueListOutput {
     fn format_plain(&self) -> String {
         let mut b = Builder::new();
-        b.push_record(vec!["PATH", "VALUE"]);
+        b.push_record(vec!["PATH", "VALUE", "VERSION"]);
         for ns in &self.values {
-            b.push_record(vec![ns.key.clone(), ns.value.clone()]);
+            b.push_record(vec![ns.key.clone(), ns.value.clone(), ns.version.to_string()]);
         }
 
         let mut table = b.build();
@@ -41,7 +44,11 @@ pub async fn exec(client: MakoApiClient, path: String, format: String) -> anyhow
     let kvs = client.namespaces().get_kvs(NamespacePath { path }).await?;
 
     let output = ValueListOutput {
-        values: kvs.values.into_iter().map(|kv| ValueListOutputItem { key: kv.key, value: kv.value }).collect(),
+        values: kvs.values.into_iter().map(|kv| ValueListOutputItem {
+            key: kv.key,
+            value: kv.value,
+            version: kv.version,
+        }).collect(),
     };
 
     write_output(&output, format);

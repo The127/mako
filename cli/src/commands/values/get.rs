@@ -12,13 +12,16 @@ struct GetValueOutput {
 
     #[serde(rename = "value")]
     value: String,
+
+    #[serde(rename = "version")]
+    version: u64,
 }
 
 impl Output for GetValueOutput {
     fn format_plain(&self) -> String {
         let mut b = Builder::new();
-        b.push_record(vec!["KEY", "VALUE"]);
-        b.push_record(vec![self.key.clone(), self.value.clone()]);
+        b.push_record(vec!["KEY", "VALUE", "VERSION"]);
+        b.push_record(vec![self.key.clone(), self.value.clone(), self.version.to_string()]);
 
         let mut table = b.build();
         table.with(tabled::settings::Style::ascii());
@@ -39,6 +42,7 @@ pub async fn exec(client: MakoApiClient, path: String, key: String, format: Stri
     let output = GetValueOutput {
         key: value.key,
         value: value.value,
+        version: value.version,
     };
 
     write_output(&output, format);
