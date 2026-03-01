@@ -1,6 +1,6 @@
-use shared::dtos::namespaces::CreateNamespaceDto;
 use crate::errors::ApiClientError;
 use crate::MakoApiClient;
+use shared::dtos::namespaces::NamespacePath;
 
 pub struct NamespaceClient<'a> {
     client: &'a MakoApiClient,
@@ -11,12 +11,12 @@ impl<'a> NamespaceClient<'a> {
         NamespaceClient { client }
     }
 
-    pub async fn create(&self, dto: CreateNamespaceDto) -> Result<(), ApiClientError> {
-        let url = "namespaces";
+    pub async fn create(&self, dto: NamespacePath) -> Result<(), ApiClientError> {
+        let url = format!("v1/namespaces/{}", dto.path);
 
-        let resp = self.client
-            .request(reqwest::Method::POST, &url)
-            .json(&dto)
+        let resp = self
+            .client
+            .request(reqwest::Method::PUT, &url)
             .send()
             .await?;
 

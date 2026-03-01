@@ -1,5 +1,5 @@
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct CreateNamespaceDto {
+pub struct NamespacePath {
     #[serde(rename = "path")]
     pub path: String,
 }

@@ -1,10 +1,6 @@
 ### Create a namespace
-POST localhost:8080/namespaces
-Content-Type: application/json
-
-{
-    "path": "foo/bar2"
-}
+PUT localhost:8080/v1/namespaces/foo/bar
+Authorization: ApiToken test
 
 ### List all namespaces
-GET localhost:8080/namespaces
+GET localhost:8080/v1/namespaces

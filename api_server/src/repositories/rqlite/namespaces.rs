@@ -47,7 +47,7 @@ struct NamespaceRepositoryImpl {
 }
 
 impl NamespaceRepository for NamespaceRepositoryImpl {
-    fn insert(&self, namespace: Namespace) {
+    fn insert_if_not_exists(&self, namespace: Namespace) {
         let mapped = NamespaceModel::from(&namespace);
 
         let mut tx = self.transaction.borrow_mut();
@@ -57,7 +57,8 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
                 path
             ) values (
                 ?
-            )",
+            )
+            on conflict (path) do nothing",
             &mapped.path,
         ]);
     }
@@ -87,5 +88,9 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
             }
             _ => None,
         }
+    }
+
+    fn exists(&self, path: &str) -> bool {
+        self.get(path).is_some()
     }
 }

@@ -1,9 +1,9 @@
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 use env_logger::Env;
 use mako_client::MakoApiClient;
-use shared::dtos::namespaces::CreateNamespaceDto;
-use anyhow::Result;
 use mako_client::auth::ApiTokenAuthProvider;
+use shared::dtos::namespaces::NamespacePath;
 
 #[derive(Parser)]
 #[command(name = "mako", version = "v0.1.0", about = "The mako kv cli binary.", long_about = None)]
@@ -17,7 +17,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Namespaces{
+    Namespaces {
         #[clap(subcommand)]
         command: NamespaceCommands,
     },
@@ -25,9 +25,7 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum NamespaceCommands {
-    Create {
-        path: String,
-    }
+    Create { path: String },
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -49,21 +47,14 @@ async fn main() -> Result<()> {
         }
     };
 
-
     match cli.command {
-        Commands::Namespaces { command } => {
-            match command {
-                NamespaceCommands::Create { path } => {
-                    create_namespace(client, path).await
-                }
-            }
+        Commands::Namespaces { command } => match command {
+            NamespaceCommands::Create { path } => create_namespace(client, path).await,
         },
     }
 }
 
-async fn create_namespace(client: MakoApiClient, path: String) -> Result<()>{
-    client.namespaces().create(CreateNamespaceDto{
-        path
-    }).await?;
+async fn create_namespace(client: MakoApiClient, path: String) -> Result<()> {
+    client.namespaces().create(NamespacePath { path }).await?;
     Ok(())
 }
