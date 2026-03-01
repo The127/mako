@@ -1,11 +1,11 @@
 use crate::extractors::auth::AuthUser;
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
-use actix_web::{HttpResponse, post, web};
+use actix_web::{HttpResponse, put, web};
 use shared::dtos::values::{CreateValueDto, NamespacedKey};
 
-#[post("/v1/kv/{path:.+}/{key}")]
-async fn create_value(
+#[put("/v1/kv/{path:.+}/{key}")]
+async fn set_value(
     ns_key: web::Path<NamespacedKey>,
     request_dto: web::Json<CreateValueDto>,
     con: web::Data<rqlite_client::Connection>,

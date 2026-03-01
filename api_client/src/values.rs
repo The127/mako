@@ -11,11 +11,11 @@ impl<'a> ValueClient<'a> {
         ValueClient { client }
     }
 
-    pub async fn create(&self, ns_key: NamespacedKey, dto: CreateValueDto) -> Result<(), ApiClientError> {
+    pub async fn set(&self, ns_key: NamespacedKey, dto: CreateValueDto) -> Result<(), ApiClientError> {
         let url = format!("values/{}/{}", ns_key.path, ns_key.key);
 
         let resp = self.client
-            .request(reqwest::Method::POST, &url)
+            .request(reqwest::Method::PUT, &url)
             .json(&dto)
             .send()
             .await?;

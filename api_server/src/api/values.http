@@ -1,5 +1,5 @@
-### Create a new kv
-POST http://localhost:8080/v1/kv/foo/bar/key?create_namespace=true
+### Set a kv
+PUT http://localhost:8080/v1/kv/foo/bar/key
 Content-Type: application/json
 Authorization: ApiToken test
 
