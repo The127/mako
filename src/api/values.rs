@@ -1,5 +1,8 @@
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
+use crate::repositories::DbError;
+use actix_web::error::{ErrorConflict, ErrorInternalServerError, ErrorNotFound};
+use actix_web::{post, web, HttpResponse};
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct CreateValueDto {
@@ -17,22 +20,18 @@ struct CreateValueDto {
 async fn create_value(
     request_dto: web::Json<CreateValueDto>,
     con: web::Data<rqlite_client::Connection>,
-) -> impl Responder {
+) -> Result<HttpResponse, actix_web::error::Error> {
     let mut ctx = new_context(con.into_inner());
-
-    let namespace = ctx.namespaces()
-        .get(&request_dto.path);
-
-    if namespace.is_none() {
-        return HttpResponse::NotFound().body(
-            format!("Namespace {} not found", request_dto.path)
-        )
-    }
 
     ctx.values()
         .insert(Value::new(request_dto.path.clone(), request_dto.key.clone(), request_dto.value.clone()));
 
-    ctx.save_changes().unwrap();
+    ctx.save_changes()
+        .map_err(|e| match e {
+            DbError::ForeignKeyViolation(msg) => ErrorNotFound(msg),
+            DbError::UniqueViolation(msg) => ErrorConflict(msg),
+            DbError::Other(e) => ErrorInternalServerError(format!("Internal server error: {}", e)),
+        })?;
 
-    HttpResponse::NoContent().finish()
+    Ok(HttpResponse::NoContent().finish())
 }
