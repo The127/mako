@@ -21,6 +21,8 @@ impl MakoApiClient {
     }
 
     pub fn request(&self, method: reqwest::Method, path: &str) -> reqwest::RequestBuilder {
+        log::debug!("Making request: {} {}", method, path);
+
         let url = format!("{}/{}", self.base_url.trim_end_matches('/'), path);
         let mut req = self.client.request(method, &url);
 
