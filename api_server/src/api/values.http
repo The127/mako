@@ -4,7 +4,7 @@ Content-Type: application/json
 Authorization: ApiToken test
 
 {
-  "value": "v"
+  "value": "v2"
 }
 
 ### Get a kv

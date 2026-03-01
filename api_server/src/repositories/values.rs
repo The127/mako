@@ -23,7 +23,7 @@ impl Value {
 }
 
 pub trait ValueRepository {
-    fn insert(&self, value: Value);
+    fn set(&self, value: Value);
     fn get(&self, path: &str, key: &str) -> Result<Option<Value>, Box<dyn std::error::Error>>;
     fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>>;
 }

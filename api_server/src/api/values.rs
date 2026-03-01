@@ -21,7 +21,7 @@ async fn set_value(
 
     let mut ctx = new_context(con.into_inner());
 
-    ctx.values().insert(Value::new(
+    ctx.values().set(Value::new(
         ns_key.path.clone(),
         ns_key.key.clone(),
         request_dto.value.clone(),

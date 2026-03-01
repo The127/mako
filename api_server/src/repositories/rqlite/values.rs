@@ -55,7 +55,7 @@ struct ValueRepositoryImpl {
 }
 
 impl ValueRepository for ValueRepositoryImpl {
-    fn insert(&self, value: Value) {
+    fn set(&self, value: Value) {
         let mapped = ValueModel::from(&value);
 
         let mut tx = self.transaction.borrow_mut();
@@ -68,7 +68,7 @@ impl ValueRepository for ValueRepositoryImpl {
                 ?,
                 ?,
                 ?
-            )",
+            ) on conflict (path, key) do update set value = excluded.value",
             &mapped.path,
             &mapped.key,
             &mapped.value,
