@@ -1,7 +1,7 @@
 use crate::repositories::namespaces::{Namespace, NamespaceRepository};
 use crate::repositories::rqlite::context::Transaction;
 use rqlite_client::response::mapping::Standard;
-use rqlite_client::{Connection, Mapping, response};
+use rqlite_client::{response, Connection, Mapping};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -63,7 +63,7 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
         ]);
     }
 
-    fn get(&self, path: &str) -> Option<Namespace> {
+    fn get(&self, path: &str) -> Result<Option<Namespace>, Box<dyn std::error::Error>> {
         let query = self.conn.query().push_sql_values(&[
             "
             select path from namespaces where path = ?
@@ -73,24 +73,22 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
 
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
-        match response_result.results().next() {
+        match response_result.into_iter().next() {
             Some(Mapping::Standard(row)) => {
-                if let Some(values) = &row.values {
-                    log::info!("Namespace {:?} found", values);
-                    Some(NamespaceModel::scan(&row).into())
+                if let Some(_) = &row.values {
+                    Ok(Some(Namespace::from(NamespaceModel::scan(&row))))
                 } else {
-                    None
+                    Ok(None)
                 }
             }
             Some(Mapping::Error(error)) => {
-                log::error!("Error creating namespace: {}", error);
-                panic!("Error creating namespace: {}", error);
+                Err(Box::<dyn std::error::Error>::from(error))
             }
-            _ => None,
+            _ => unreachable!(),
         }
     }
 
-    fn exists(&self, path: &str) -> bool {
-        self.get(path).is_some()
+    fn exists(&self, path: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        Ok(self.get(path)?.is_some())
     }
 }
