@@ -21,7 +21,7 @@ impl Output for GetValueOutput {
         b.push_record(vec![self.key.clone(), self.value.clone()]);
 
         let mut table = b.build();
-        table.with(tabled::settings::Style::markdown());
+        table.with(tabled::settings::Style::ascii());
         table.to_string()
     }
 
