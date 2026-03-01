@@ -24,4 +24,5 @@ impl Value {
 
 pub trait ValueRepository {
     fn insert(&self, value: Value);
+    fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>>;
 }

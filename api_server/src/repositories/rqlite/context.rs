@@ -44,7 +44,7 @@ pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
         conn: conn.clone(),
         transaction: transaction.clone(),
         namespaces: new_namespace_repository(transaction.clone(), conn.clone()),
-        values: new_value_repository(transaction.clone()),
+        values: new_value_repository(transaction.clone(), conn.clone()),
         permissions: new_permission_repository(transaction.clone(), conn.clone()),
     })
 }

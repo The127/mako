@@ -1,5 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
+use rqlite_client::{response, Connection, Mapping};
+use rqlite_client::response::mapping::Standard;
 use crate::repositories::rqlite::context::Transaction;
 use crate::repositories::values::{Value, ValueRepository};
 
@@ -7,6 +10,20 @@ struct ValueModel {
     path: String,
     key: String,
     value: String,
+}
+
+impl ValueModel {
+    fn scan(row: &Standard) -> Self {
+        let path = row.value(0, 0).unwrap();
+        let key = row.value(0, 1).unwrap();
+        let value = row.value(0, 2).unwrap();
+
+        ValueModel {
+            path: path.to_string(),
+            key: key.to_string(),
+            value: value.to_string(),
+        }
+    }
 }
 
 impl From<&Value> for ValueModel {
@@ -27,12 +44,14 @@ impl From<ValueModel> for Value {
 
 pub fn new_value_repository(
     transaction: Rc<RefCell<Transaction>>,
+    conn: Arc<Connection>,
 ) -> Box<dyn ValueRepository> {
-    Box::new(ValueRepositoryImpl { transaction })
+    Box::new(ValueRepositoryImpl { transaction, conn })
 }
 
 struct ValueRepositoryImpl {
     transaction: Rc<RefCell<Transaction>>,
+    conn: Arc<Connection>,
 }
 
 impl ValueRepository for ValueRepositoryImpl {
@@ -54,5 +73,24 @@ impl ValueRepository for ValueRepositoryImpl {
             &mapped.key,
             &mapped.value,
         ]);
+    }
+
+    fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>> {
+        let query = self.conn.query().push_sql_values(&[
+            "
+            select path, key, value from \"values\" where path = ?
+            ",
+            path,
+        ]);
+
+        let response_result = response::query::Query::from(query.request_run().unwrap());
+
+        response_result.into_iter().map(|mapping| {
+            match mapping {
+                Mapping::Error(err) => Err(Box::<dyn std::error::Error>::from(err)),
+                Mapping::Standard(row) => Ok(Value::from(ValueModel::scan(&row))),
+                _ => unreachable!(),
+            }
+        }).collect()
     }
 }

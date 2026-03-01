@@ -2,5 +2,6 @@
 PUT localhost:8080/v1/namespaces/foo/bar
 Authorization: ApiToken test
 
-### List all namespaces
-GET localhost:8080/v1/namespaces
+### List all values in namespace
+GET localhost:8080/v1/namespaces/foo/bar
+Authorization: ApiToken test

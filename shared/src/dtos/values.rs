@@ -12,3 +12,18 @@ pub struct CreateValueDto {
     #[serde(rename = "value")]
     pub value: String,
 }
+
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+pub struct ValueDto {
+    #[serde(rename = "key")]
+    pub key: String,
+
+    #[serde(rename = "value")]
+    pub value: String,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+pub struct ValueListDto {
+    #[serde(rename = "values")]
+    pub values: Vec<ValueDto>,
+}
