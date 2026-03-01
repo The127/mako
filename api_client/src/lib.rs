@@ -1,14 +1,23 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+pub mod namespaces;
+pub mod errors;
+
+use reqwest::Client;
+
+pub struct MakoApiClient  {
+    base_url: String,
+    client: Client,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl MakoApiClient {
+    pub fn new(base_url: String) -> Self {
+        Self {
+            base_url,
+            client: Client::new(),
+        }
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn namespaces(&self) -> namespaces::NamespaceClient {
+        namespaces::NamespaceClient::new(self)
     }
 }
+
