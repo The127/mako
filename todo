@@ -1,0 +1,9 @@
+- delete namespaces (cascading)
+- list namespaces
+- delete a single kvs
+- cli/api parity
+- kv version tracking
+- kv caching
+
+- add oidc authentication
+- add acl checks
