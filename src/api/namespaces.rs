@@ -1,9 +1,7 @@
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{get, post, web, HttpResponse, Responder};
-use actix_web::error::{ErrorConflict, ErrorInternalServerError, ErrorNotFound};
 use rqlite_client::ureq::serde;
-use crate::repositories::DbError;
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 struct CreateNamespaceDto {
@@ -21,12 +19,7 @@ async fn create_namespace(
     ctx.namespaces()
         .insert(Namespace::new(request_dto.path.clone()));
 
-    ctx.save_changes()
-        .map_err(|e| match e {
-            DbError::ForeignKeyViolation(msg) => ErrorNotFound(msg),
-            DbError::UniqueViolation(msg) => ErrorConflict(msg),
-            DbError::Other(e) => ErrorInternalServerError(format!("Internal server error: {}", e)),
-        })?;
+    ctx.save_changes()?;
 
     Ok(HttpResponse::NoContent().finish())
 }
