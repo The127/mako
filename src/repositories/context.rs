@@ -1,4 +1,5 @@
 use crate::repositories::namespaces::NamespaceRepository;
+use crate::repositories::permissions::PermissionRepository;
 use crate::repositories::values::ValueRepository;
 
 pub enum DbError {
@@ -12,4 +13,5 @@ pub trait DbContext {
 
     fn namespaces(&self) -> &dyn NamespaceRepository;
     fn values(&self) -> &dyn ValueRepository;
+    fn permissions(&self) -> &dyn PermissionRepository;   
 }

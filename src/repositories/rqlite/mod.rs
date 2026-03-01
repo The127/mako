@@ -5,6 +5,7 @@ use crate::repositories::context::DbContext;
 mod namespaces;
 mod context;
 mod values;
+mod permissions;
 
 pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
     context::new_context(conn)

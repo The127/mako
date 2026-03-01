@@ -7,6 +7,8 @@ use rqlite_client::{Connection, Mapping, response};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
+use crate::repositories::permissions::PermissionRepository;
+use crate::repositories::rqlite::permissions::new_permission_repository;
 
 pub struct Transaction {
     queries: Vec<Vec<serde_json::Value>>,
@@ -32,6 +34,7 @@ struct DbContextImpl {
 
     namespaces: Box<dyn NamespaceRepository>,
     values: Box<dyn ValueRepository>,
+    permissions: Box<dyn PermissionRepository>,
 }
 
 pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
@@ -42,6 +45,7 @@ pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
         transaction: transaction.clone(),
         namespaces: new_namespace_repository(transaction.clone(), conn.clone()),
         values: new_value_repository(transaction.clone()),
+        permissions: new_permission_repository(transaction.clone(), conn.clone()),
     })
 }
 
@@ -83,5 +87,9 @@ impl DbContext for DbContextImpl {
 
     fn values(&self) -> &dyn ValueRepository {
         self.values.as_ref()
+    }
+
+    fn permissions(&self) -> &dyn PermissionRepository {
+        self.permissions.as_ref()
     }
 }

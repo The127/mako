@@ -1,0 +1,51 @@
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum PermissionType {
+    Read,
+    Write,
+}
+
+impl PermissionType {
+    pub fn to_string(&self) -> String {
+        match self {
+            PermissionType::Read => "read".to_string(),
+            PermissionType::Write => "write".to_string(),
+        }
+    }
+
+    pub fn from_string(s: &str) -> Option<PermissionType> {
+        match s {
+            "read" => Some(PermissionType::Read),
+            "write" => Some(PermissionType::Write),
+            _ => None,
+        }
+    }   
+}
+
+pub struct Permission {
+    subject_id: String,
+    path: String,
+    permissions: Vec<PermissionType>,
+}
+
+impl Permission {
+    pub fn new(subject_id: String, path: String, permissions: Vec<PermissionType>) -> Self {
+        Permission { subject_id, path, permissions }
+    }
+
+    pub fn subject_id(&self) -> String {
+        self.subject_id.clone()
+    }
+
+    pub fn path(&self) -> String {
+        self.path.clone()
+    }
+
+    pub fn permissions(&self) -> Vec<PermissionType> {
+        self.permissions.clone()
+    }
+}
+
+pub trait PermissionRepository {
+    fn insert(&self, permission: Permission);
+    fn get(&self, subject_id: &str, path: &str) -> Option<Permission>;
+}
