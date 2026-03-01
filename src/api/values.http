@@ -3,7 +3,7 @@ POST http://localhost:8080/values?create_namespace=true
 Content-Type: application/json
 
 {
-  "path": "foo/bar67",
+  "path": "foo/bar69",
   "key": "k",
   "value": "v"
 }

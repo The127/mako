@@ -15,31 +15,21 @@ struct CreateValueDto {
     value: String,
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct CreateValueQueryParams {
-    #[serde(rename = "create_namespace")]
-    create_namespace: Option<bool>,
-}
 
 #[post("/values")]
 async fn create_value(
     request_dto: web::Json<CreateValueDto>,
-    params: web::Query<CreateValueQueryParams>,
     con: web::Data<rqlite_client::Connection>,
 ) -> impl Responder {
     let mut ctx = new_context(con.into_inner());
 
-    let namespace = ctx.namespaces().
-        get(&request_dto.path);
+    let namespace = ctx.namespaces()
+        .get(&request_dto.path);
 
     if namespace.is_none() {
-        if params.create_namespace.unwrap_or(false) {
-            ctx.namespaces().insert(Namespace::new(request_dto.path.clone()));
-        }else{
-            return HttpResponse::NotFound().body(
-                format!("Namespace {} not found", request_dto.path)
-            )
-        }
+        return HttpResponse::NotFound().body(
+            format!("Namespace {} not found", request_dto.path)
+        )
     }
 
     ctx.values()
