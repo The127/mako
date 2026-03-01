@@ -6,3 +6,7 @@ Authorization: ApiToken test
 {
   "value": "v"
 }
+
+### Get a kv
+GET http://localhost:8080/v1/kv/foo/bar/key
+Authorization: ApiToken test

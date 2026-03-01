@@ -75,6 +75,32 @@ impl ValueRepository for ValueRepositoryImpl {
         ]);
     }
 
+    fn get(&self, path: &str, key: &str) -> Result<Option<Value>, Box<dyn std::error::Error>> {
+        let query = self.conn.query().push_sql_values(&[
+            "
+            select path, key, value from \"values\" where path = ? and key = ?
+            ",
+            path,
+            key,
+        ]);
+
+        let response_result = response::query::Query::from(query.request_run().unwrap());
+
+        match response_result.into_iter().next() {
+            Some(Mapping::Standard(row)) => {
+                if let Some(_) = &row.values {
+                    Ok(Some(Value::from(ValueModel::scan(&row))))
+                } else {
+                    Ok(None)
+                }
+            }
+            Some(Mapping::Error(error)) => {
+                Err(Box::<dyn std::error::Error>::from(error))
+            }
+            _ => Err(Box::<dyn std::error::Error>::from("Unexpected response format"))
+        }
+    }
+
     fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>> {
         let query = self.conn.query().push_sql_values(&[
             "

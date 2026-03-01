@@ -9,4 +9,5 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(namespaces::list_namespace_kvs);
 
     cfg.service(values::set_value);
+    cfg.service(values::get_value);
 }
