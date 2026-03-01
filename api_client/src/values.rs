@@ -1,4 +1,4 @@
-use shared::dtos::values::CreateValueDto;
+use shared::dtos::values::{CreateValueDto, NamespacedKey};
 use crate::errors::ApiClientError;
 use crate::MakoApiClient;
 
@@ -11,8 +11,8 @@ impl<'a> ValueClient<'a> {
         ValueClient { client }
     }
 
-    pub async fn create(&self, dto: CreateValueDto) -> Result<(), ApiClientError> {
-        let url = "values";
+    pub async fn create(&self, ns_key: NamespacedKey, dto: CreateValueDto) -> Result<(), ApiClientError> {
+        let url = format!("values/{}/{}", ns_key.path, ns_key.key);
 
         let resp = self.client
             .request(reqwest::Method::POST, &url)

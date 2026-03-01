@@ -1,9 +1,8 @@
 ### Create a new kv
-POST http://localhost:8080/values?create_namespace=true
+POST http://localhost:8080/v1/kv/foo/bar/key?create_namespace=true
 Content-Type: application/json
+Authorization: ApiToken test
 
 {
-  "path": "foo/bar69",
-  "key": "k",
   "value": "v"
 }
