@@ -8,5 +8,9 @@ Authorization: ApiToken test
 }
 
 ### Get a kv
-GET http://localhost:8080/v1/kv/foo/bar/key
+GET http://localhost:8080/v1/kv/foo/bar/key2
+Authorization: ApiToken test
+
+### Delete a kv
+DELETE localhost:8080/v1/kv/foo/bar/key2
 Authorization: ApiToken test

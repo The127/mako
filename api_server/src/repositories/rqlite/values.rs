@@ -126,4 +126,15 @@ impl ValueRepository for ValueRepositoryImpl {
             _ => unreachable!(),
         }
     }
+
+    fn delete_if_exists(&self, path: &str, key: &str) {
+        let mut tx = self.transaction.borrow_mut();
+        tx.push_sql_values(&[
+            "
+            delete from \"values\" where path = ? and key = ?
+            ",
+            path,
+            key,
+        ]);       
+    }
 }

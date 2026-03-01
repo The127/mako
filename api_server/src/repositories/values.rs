@@ -26,4 +26,5 @@ pub trait ValueRepository {
     fn set(&self, value: Value);
     fn get(&self, path: &str, key: &str) -> Result<Option<Value>, Box<dyn std::error::Error>>;
     fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>>;
+    fn delete_if_exists(&self, path: &str, key: &str);   
 }

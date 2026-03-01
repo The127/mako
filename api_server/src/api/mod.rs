@@ -12,4 +12,5 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 
     cfg.service(values::set_value);
     cfg.service(values::get_value);
+    cfg.service(values::delete_value);
 }
