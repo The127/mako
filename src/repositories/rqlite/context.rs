@@ -1,12 +1,12 @@
-use crate::repositories::context::DbContext;
+use crate::repositories::context::{DbContext, DbError};
 use crate::repositories::namespaces::NamespaceRepository;
 use crate::repositories::rqlite::namespaces::new_namespace_repository;
+use crate::repositories::rqlite::values::new_value_repository;
+use crate::repositories::values::ValueRepository;
 use rqlite_client::{Connection, Mapping, response};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
-use crate::repositories::rqlite::values::new_value_repository;
-use crate::repositories::values::ValueRepository;
 
 pub struct Transaction {
     queries: Vec<Vec<serde_json::Value>>,
@@ -46,10 +46,11 @@ pub fn new_context(conn: Arc<Connection>) -> Box<dyn DbContext> {
 }
 
 impl DbContext for DbContextImpl {
-    fn save_changes(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn save_changes(&mut self) -> Result<(), DbError> {
         let mut tx = self.transaction.borrow_mut();
 
-        let mut query = self.conn.execute().enable_transaction();
+        let mut query = self.conn.execute()
+            .enable_transaction();
 
         for q in &tx.queries {
             query = query.push_sql_values(q);
@@ -57,9 +58,19 @@ impl DbContext for DbContextImpl {
 
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
-        match response_result.results().next() {
-            Some(Mapping::Error(error)) => return Err(Box::new(error.clone())),
-            _ => {},
+        for mapping in response_result.into_iter() {
+            match mapping {
+                Mapping::Error(error) => {
+                    return if error.error.contains("FOREIGN KEY constraint failed") {
+                        Err(DbError::ForeignKeyViolation(error.error.clone()))
+                    } else if error.error.contains("UNIQUE constraint failed") {
+                        Err(DbError::UniqueViolation(error.error.clone()))
+                    } else {
+                        Err(DbError::Other(Box::new(error)))
+                    }
+                }
+                _ => (),
+            }
         }
 
         tx.clear();
