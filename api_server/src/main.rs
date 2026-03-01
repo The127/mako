@@ -28,7 +28,7 @@ pub struct MakoCli {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let env = Env::default()
-        .filter_or("MAKO_LOG_LEVEL", "debug")
+        .filter_or("MAKO_LOG_LEVEL", "error")
         .write_style_or("MAKO_LOG_STYLE", "always");
 
     env_logger::init_from_env(env);
