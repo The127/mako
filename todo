@@ -7,3 +7,5 @@
 
 - add oidc authentication
 - add acl checks
+
+- add etag support
