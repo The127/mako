@@ -11,3 +11,6 @@ mako_client = { path = "../api_client" }
 shared = { path = "../shared" }
 anyhow = "1.0.102"
 tokio = { version = "1.49.0", features = ["full"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+tabled = "0.20.0"

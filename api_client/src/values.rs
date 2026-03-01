@@ -12,7 +12,7 @@ impl<'a> ValueClient<'a> {
     }
 
     pub async fn set(&self, ns_key: NamespacedKey, dto: CreateValueDto) -> Result<(), ApiClientError> {
-        let url = format!("values/{}/{}", ns_key.path, ns_key.key);
+        let url = format!("v1/kv/{}/{}", ns_key.path, ns_key.key);
 
         let resp = self.client
             .request(reqwest::Method::PUT, &url)
@@ -30,7 +30,7 @@ impl<'a> ValueClient<'a> {
     }
 
     pub async fn get(&self, ns_key: NamespacedKey) -> Result<ValueDto, ApiClientError> {
-        let url = format!("values/{}/{}", ns_key.path, ns_key.key);
+        let url = format!("v1/kv/{}/{}", ns_key.path, ns_key.key);
         let resp = self.client
             .request(reqwest::Method::GET, &url)
             .send()
@@ -47,7 +47,7 @@ impl<'a> ValueClient<'a> {
     }
 
     pub async fn delete(&self, ns_key: NamespacedKey) -> Result<(), ApiClientError> {
-        let url = format!("values/{}/{}", ns_key.path, ns_key.key);
+        let url = format!("v1/kv/{}/{}", ns_key.path, ns_key.key);
         let resp = self.client
             .request(reqwest::Method::DELETE, &url)
             .send()

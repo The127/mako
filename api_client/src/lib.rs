@@ -35,5 +35,9 @@ impl MakoApiClient {
     pub fn namespaces(&self) -> namespaces::NamespaceClient {
         namespaces::NamespaceClient::new(self)
     }
+
+    pub fn values(&self) -> values::ValueClient {
+        values::ValueClient::new(self)
+    }
 }
 
