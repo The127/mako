@@ -1,4 +1,4 @@
-# 📌 Mako – Simple Zero-Trust KV Store for configuration
+# 🦈 Mako – Simple Zero-Trust KV Store for configuration
 
 Mako is a lightweight, persistent key-value configuration store designed for modern distributed environments. It provides a secure, minimal, consistent config API without the complexity of etcd, Consul, or large distributed databases.
 
