@@ -8,6 +8,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(namespaces::create_namespace);
     cfg.service(namespaces::list_namespace_kvs);
     cfg.service(namespaces::delete_namespace);
+    cfg.service(namespaces::list_namespaces);
 
     cfg.service(values::set_value);
     cfg.service(values::get_value);

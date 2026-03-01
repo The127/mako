@@ -1,4 +1,3 @@
-- list namespaces
 - delete a single kvs
 - cli/api parity
 - kv version tracking

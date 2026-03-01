@@ -1,6 +1,5 @@
 use crate::repositories::namespaces::{Namespace, NamespaceRepository};
 use crate::repositories::rqlite::context::Transaction;
-use rqlite_client::response::mapping::Standard;
 use rqlite_client::{response, Connection, Mapping};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -94,6 +93,28 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
 
     fn exists(&self, path: &str) -> Result<bool, Box<dyn std::error::Error>> {
         Ok(self.get(path)?.is_some())
+    }
+
+    fn list(&self) -> Result<Vec<Namespace>, Box<dyn std::error::Error>> {
+        let query = self.conn.query().push_sql_values(&[
+            "
+            select path from namespaces
+            ",
+        ]);
+
+        let response_result = response::query::Query::from(query.request_run()?);
+
+        match response_result.into_iter().next() {
+            Some(Mapping::Error(err)) => Err(Box::<dyn std::error::Error>::from(err)),
+            Some(Mapping::Standard(standard)) => {
+                if let Some(mapping) = &standard.values {
+                    Ok(mapping.iter().map(|row| Namespace::from(NamespaceModel::scan(&row))).collect())
+                }else{
+                    Ok(Vec::new())
+                }
+            },
+            _ => unreachable!(),
+        }
     }
 
     fn delete_if_exists(&self, path: &str) {

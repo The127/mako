@@ -2,7 +2,7 @@ use crate::extractors::auth::AuthUser;
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{delete, get, put, web, HttpResponse};
-use shared::dtos::namespaces::NamespacePath;
+use shared::dtos::namespaces::{NamespaceDto, NamespaceListDto, NamespacePath};
 use shared::dtos::values::{ValueDto, ValueListDto};
 
 #[put("/v1/namespaces/{path:.+}")]
@@ -27,6 +27,33 @@ async fn create_namespace(
     ctx.save_changes()?;
 
     Ok(HttpResponse::NoContent().finish())
+}
+
+#[get("/v1/namespaces")]
+async fn list_namespaces(
+    con: web::Data<rqlite_client::Connection>,
+    user: AuthUser,
+) -> Result<HttpResponse, actix_web::error::Error> {
+    match user {
+        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
+        AuthUser::Oidc { .. } => {
+            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
+        }
+        AuthUser::Admin => (),
+    }
+
+    let ctx = new_context(con.into_inner());
+
+    let namespaces = ctx.namespaces().list()?;
+
+    Ok(HttpResponse::Ok().json(NamespaceListDto {
+        namespaces: namespaces
+            .into_iter()
+            .map(|ns| NamespaceDto{
+                path: ns.path(),
+            })
+            .collect(),
+    }))
 }
 
 #[get("/v1/namespaces/{path:.+}")]
