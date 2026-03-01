@@ -10,8 +10,10 @@ async fn create_namespace(
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    if !user.is_authenticated() {
-        return Err(actix_web::error::ErrorUnauthorized("Not authenticated"));
+    match user {
+        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
+        AuthUser::Oidc { .. } => return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO")),
+        AuthUser::Admin => (),
     }
 
     let mut ctx = new_context(con.into_inner());
