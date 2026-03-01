@@ -1,7 +1,7 @@
 pub mod api;
 pub mod repositories;
 
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use actix_web::web::Data;
 use clap::Parser;
 use env_logger::Env;

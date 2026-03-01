@@ -1,5 +1,3 @@
-use actix_web::{post, web, HttpResponse, Responder};
-use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
 

@@ -1,6 +1,7 @@
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::error::{ErrorConflict, ErrorInternalServerError, ErrorNotFound};
 use rqlite_client::ureq::serde;
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
