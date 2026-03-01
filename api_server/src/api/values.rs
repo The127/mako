@@ -1,18 +1,7 @@
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
 use actix_web::{post, web, HttpResponse};
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct CreateValueDto {
-    #[serde(rename = "path")]
-    path: String,
-
-    #[serde(rename = "key")]
-    key: String,
-
-    #[serde(rename = "value")]
-    value: String,
-}
+use shared::dtos::values::CreateValueDto;
 
 #[post("/values")]
 async fn create_value(

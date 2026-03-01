@@ -1,13 +1,7 @@
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{get, post, web, HttpResponse, Responder};
-use rqlite_client::ureq::serde;
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct CreateNamespaceDto {
-    #[serde(rename = "path")]
-    path: String,
-}
+use shared::dtos::namespaces::CreateNamespaceDto;
 
 #[post("/namespaces")]
 async fn create_namespace(
