@@ -156,7 +156,6 @@ impl ValueRepository for ValueRepositoryImpl {
                     Ok(Vec::new())
                 }
             },
-            Some(Mapping::Empty(empty)) => Ok(Vec::new()),
             _ => unreachable!(),
         }
     }

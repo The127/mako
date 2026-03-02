@@ -1,13 +1,14 @@
 pub mod api;
-pub mod repositories;
+pub mod cache;
 pub mod extractors;
+pub mod repositories;
 
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use actix_web::web::Data;
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use clap::Parser;
 use env_logger::Env;
-use rqlite_client::{embed_migrations, Connection};
 use rqlite_client::migration::Migration;
+use rqlite_client::{Connection, embed_migrations};
 
 embed_migrations!(pub(crate) MyEmbeddedData("migrations"));
 
@@ -36,14 +37,21 @@ async fn main() -> std::io::Result<()> {
     let cli = MakoCli::parse();
 
     let con = Connection::new(&cli.database_connection).unwrap();
-    Migration::from_embed::<MyEmbeddedData>().migrate(&con).unwrap();
+    Migration::from_embed::<MyEmbeddedData>()
+        .migrate(&con)
+        .unwrap();
 
     log::info!("Starting mako on {}:{}", cli.host, cli.port);
 
-    HttpServer::new(move|| App::new().configure(init_app).app_data(Data::new(con.clone())))
-        .bind((cli.host, cli.port))?
-        .run()
-        .await
+    HttpServer::new(move || {
+        App::new()
+            .configure(init_app)
+            .app_data(Data::new(con.clone()))
+            .app_data(Data::new(cache::Cache::new()))
+    })
+    .bind((cli.host, cli.port))?
+    .run()
+    .await
 }
 
 fn init_app(cfg: &mut web::ServiceConfig) {
