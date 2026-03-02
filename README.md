@@ -10,6 +10,7 @@ Mako is a lightweight, persistent key-value configuration store designed for mod
 - Simple KV abstraction
 - Zero-trust access with OIDC tokens (or admin API key)
 - API-side caching for fast reads
+- Efficient client polling via HTTP caching (ETags)
 - Designed for hundreds to thousands of clients
 
 ---
@@ -32,11 +33,22 @@ Clients authenticate using short-lived OIDC tokens obtained via a secure token e
 
 API instances keep config data in memory for very fast read performance. Most reads are served directly from cache with minimal load on the backend store.
 
+### 🏷️ ETag Support (Efficient Polling)
+
+`GET` responses include an `ETag` representing the current version of the requested key.
+
+Clients can send `If-None-Match` on subsequent reads:
+
+- If the value has **not** changed, the API returns **`304 Not Modified`** (no body)
+- If the value **has** changed, the API returns **`200 OK`** with the updated value and a new `ETag`
+
+This is the recommended way to implement lightweight polling without repeatedly downloading unchanged configuration.
+
 ### 🪶 Simple API
 
 Mako exposes a minimal HTTPS API for:
 
-- Getting key/value pairs
+- Getting key/value pairs (with ETag-based conditional requests)
 - Lightweight polling for config updates
 - Token-authenticated access with simple semantics
 
