@@ -1,6 +1,6 @@
 use actix_web::{dev::Payload, error::ErrorUnauthorized, Error, FromRequest, HttpRequest};
 use futures::future::LocalBoxFuture;
-use jwt_verify::{JwtVerifier, OidcJwtVerifier, OidcProviderConfig};
+use jwt_verify::{JwtVerifier, OidcIdTokenClaims, OidcJwtVerifier, OidcProviderConfig};
 
 pub enum AuthUser {
     Oidc { sub: String, roles: Vec<String> },
@@ -54,13 +54,8 @@ impl FromRequest for AuthUser {
                     let sub = claims.get_sub().to_string();
 
                     // Extract roles claim (assume it’s an array of strings)
-                    let roles: Vec<String> = claims.get_custom_claim("roles")
-                        .and_then(|v| v.as_array())
-                        .map(|arr| {
-                            arr.iter()
-                                .filter_map(|val| val.as_str().map(String::from))
-                                .collect()
-                        })
+                    let roles: Vec<String> = claims.downcast::<OidcIdTokenClaims>().unwrap().base
+                        .get_custom_claim_string_array("roles")
                         .unwrap_or_default();
 
                     Ok(AuthUser::Oidc { sub, roles })
