@@ -2,6 +2,7 @@ pub mod namespaces;
 pub mod errors;
 pub mod auth;
 pub mod values;
+pub mod acl;
 
 use reqwest::Client;
 
@@ -38,6 +39,10 @@ impl MakoApiClient {
 
     pub fn values(&self) -> values::ValueClient {
         values::ValueClient::new(self)
+    }
+
+    pub fn acl(&self) -> acl::AclClient {
+        acl::AclClient::new(self)
     }
 }
 

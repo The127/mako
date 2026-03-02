@@ -31,6 +31,7 @@ impl<'a> ValueClient<'a> {
 
     pub async fn get(&self, ns_key: NamespacedKey) -> Result<ValueDto, ApiClientError> {
         let url = format!("v1/kv/{}/{}", ns_key.path, ns_key.key);
+        
         let resp = self.client
             .request(reqwest::Method::GET, &url)
             .send()
