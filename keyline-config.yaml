@@ -37,14 +37,10 @@ initialVirtualServer:
     - slug: "mako"
       name: "Mako"
       description: "Mako dev project"
-      applications:
-        - name: "mako-app"
-          displayName: "Mako App"
-          type: "public"
-          redirectUris:
-            - "http://localhost:5173/raccoons/oidc/login"
-          postLogoutRedirectUris:
-            - "http://localhost:5173/raccoons/oidc/logout"
       roles:
         - name: "admin"
           description: "Mako Admin"
+        - name: "reader"
+          description: "Mako Reader"
+        - name: "writer"
+          description: "Mako Writer"
