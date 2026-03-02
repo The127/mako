@@ -46,6 +46,8 @@ impl Permission {
 }
 
 pub trait PermissionRepository {
-    fn insert(&self, permission: Permission);
-    fn get(&self, subject_id: &str, path: &str) -> Option<Permission>;
+    fn set(&self, permission: Permission);
+    fn get(&self, subject_id: &str, path: &str) -> Result<Option<Permission>, Box<dyn std::error::Error>>;
+    fn list(&self, path: &str) -> Result<Vec<Permission>, Box<dyn std::error::Error>>;
+    fn delete(&self, subject_id: &str, path: &str);
 }

@@ -3,7 +3,7 @@ PUT localhost:8080/v1/namespaces/foo/qux
 Authorization: ApiToken test
 
 ### List all values in namespace
-GET localhost:8080/v1/namespaces/foo/bar
+GET localhost:8080/v1/namespaces/foo
 Authorization: ApiToken test
 
 ### List all namespaces

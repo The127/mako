@@ -1,0 +1,20 @@
+### Create an acl
+PUT http://localhost:8080/v1/acl/foo/user1
+Content-Type: application/json
+Authorization: ApiToken test
+
+{
+  "permissions": ["Read"]
+}
+
+### List all acls in a namespace
+GET http://localhost:8080/v1/acl/foo/
+Authorization: ApiToken test
+
+### List acl for a user in a namespace
+GET http://localhost:8080/v1/acl/foo/user1
+Authorization: ApiToken test
+
+### Delete a users acls in a namspace
+DELETE http://localhost:8080/v1/acl/foo/user1
+Authorization: ApiToken test

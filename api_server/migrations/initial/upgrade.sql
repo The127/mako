@@ -10,7 +10,7 @@ create table permissions ( \
     permissions text not null, \
 \
     primary key (subject_id, path), \
-    foreign key (path) references namespaces (path) \
+    foreign key (path) references namespaces (path) on delete cascade \
 );
 
 create table "values" ( \

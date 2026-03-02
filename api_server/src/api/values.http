@@ -1,5 +1,5 @@
 ### Set a kv
-PUT http://localhost:8080/v1/kv/foo/bar/key2
+PUT http://localhost:8080/v1/kv/foo/key2
 Content-Type: application/json
 Authorization: ApiToken test
 
