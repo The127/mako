@@ -1,8 +1,6 @@
-use std::fmt::format;
-use reqwest::Client;
-use shared::dtos::permissions::{NamespacedSubject, PermissionDto, PermissionListDto};
 use crate::errors::ApiClientError;
 use crate::MakoApiClient;
+use shared::dtos::permissions::{CreatePermissionDto, NamespacedSubject, PermissionDto, PermissionListDto};
 
 pub struct AclClient<'a> {
     client: &'a MakoApiClient,
@@ -13,11 +11,12 @@ impl<'a> AclClient<'a> {
         AclClient { client }
     }
 
-    pub async fn set(&self, ns_subject: NamespacedSubject) -> Result<(), ApiClientError> {
+    pub async fn set(&self, ns_subject: NamespacedSubject, acl: CreatePermissionDto) -> Result<(), ApiClientError> {
         let url = format!("v1/acl/{}/{}", ns_subject.path, ns_subject.subject_id);
 
         let resp = self.client
             .request(reqwest::Method::PUT, &url)
+            .json(&acl)
             .send()
             .await?;
 
@@ -65,8 +64,8 @@ impl<'a> AclClient<'a> {
         Ok(())
     }
 
-    pub async fn list(&self, ns_subject: NamespacedSubject) -> Result<PermissionListDto, ApiClientError> {
-        let url = format!("v1/acl/{}/", ns_subject.path.trim_end_matches('/'));
+    pub async fn list(&self, path: String) -> Result<PermissionListDto, ApiClientError> {
+        let url = format!("v1/acl/{}/", path.trim_end_matches('/'));
 
         let resp = self.client
             .request(reqwest::Method::GET, &url)
