@@ -2,7 +2,8 @@ use crate::cache::Cache;
 use crate::extractors::auth::AuthUser;
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
-use actix_web::{delete, get, put, web, HttpResponse};
+use actix_web::http::header::IF_NONE_MATCH;
+use actix_web::{HttpRequest, HttpResponse, delete, get, put, web};
 use shared::dtos::values::{CreateValueDto, NamespacedKey, ValueDto};
 
 #[put("/v1/kv/{path:.+}/{key}")]
@@ -35,6 +36,7 @@ async fn set_value(
 
 #[get("/v1/kv/{path:.+}/{key}")]
 async fn get_value(
+    req: HttpRequest,
     ns_key: web::Path<NamespacedKey>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
@@ -53,11 +55,20 @@ async fn get_value(
     if let Some(cached_value) = cache.get(&ns_key.path, &ns_key.key) {
         if let Some(db_version) = ctx.values().get_version(&ns_key.path, &ns_key.key)? {
             if cached_value.version == db_version {
-                return Ok(HttpResponse::Ok().json(ValueDto{
-                    key:  ns_key.key.clone(),
-                    value: cached_value.value.clone(),
-                    version: cached_value.version as u64,
-                }));
+                let etag_value = format!("\"{}\"", cached_value.version);
+                if let Some(etag) = req.headers().get(IF_NONE_MATCH) {
+                    if etag.to_str().ok() == Some(&etag_value) {
+                        return Ok(HttpResponse::NotModified().finish());
+                    }
+                }
+
+                return Ok(HttpResponse::Ok()
+                    .insert_header((actix_web::http::header::ETAG, etag_value))
+                    .json(ValueDto {
+                        key: ns_key.key.clone(),
+                        value: cached_value.value.clone(),
+                        version: cached_value.version as u64,
+                    }));
             }
         }
     }
@@ -65,14 +76,28 @@ async fn get_value(
     let value = ctx.values().get(&ns_key.path, &ns_key.key)?;
     match value {
         Some(value) => {
-            cache.insert(ns_key.path.clone(), ns_key.key.clone(), value.value(), value.version());
+            cache.insert(
+                ns_key.path.clone(),
+                ns_key.key.clone(),
+                value.value(),
+                value.version(),
+            );
 
-            Ok(HttpResponse::Ok().json(ValueDto{
-                key: value.key(),
-                value: value.value(),
-                version: value.version() as u64,
-            }))
-        },
+            let etag_version = format!("\"{}\"", value.version());
+            if let Some(etag) = req.headers().get(IF_NONE_MATCH) {
+                if etag.to_str().ok() == Some(&etag_version) {
+                    return Ok(HttpResponse::NotModified().finish());
+                }
+            }
+
+            Ok(HttpResponse::Ok()
+                .insert_header((actix_web::http::header::ETAG, etag_version))
+                .json(ValueDto {
+                    key: value.key(),
+                    value: value.value(),
+                    version: value.version() as u64,
+                }))
+        }
         None => Ok(HttpResponse::NotFound().finish()),
     }
 }
@@ -82,7 +107,7 @@ async fn delete_value(
     ns_key: web::Path<NamespacedKey>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
-) -> Result<HttpResponse, actix_web::error::Error>{
+) -> Result<HttpResponse, actix_web::error::Error> {
     match user {
         AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
         AuthUser::Oidc { .. } => {
