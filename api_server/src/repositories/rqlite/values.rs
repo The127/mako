@@ -114,6 +114,29 @@ impl ValueRepository for ValueRepositoryImpl {
         }
     }
 
+    fn get_version(&self, path: &str, key: &str) -> Result<Option<i64>, Box<dyn std::error::Error>> {
+        let query = self.conn.query().push_sql_values(&[
+            "
+            select version from \"values\" where path = ? and key = ?
+            ",
+            path,
+            key,
+        ]);
+
+        let response_result = response::query::Query::from(query.request_run()?);
+
+        if let Some(Mapping::Standard(standard)) = response_result.into_iter().next() {
+            if let Some(mapping) = &standard.values {
+                if let Some(row) = mapping.first() {
+                    let version = row[0].as_i64().unwrap();
+                    return Ok(Some(version));
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
     fn list(&self, path: &str) -> Result<Vec<Value>, Box<dyn std::error::Error>> {
         let query = self.conn.query().push_sql_values(&[
             "
