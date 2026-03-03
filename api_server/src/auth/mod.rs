@@ -5,9 +5,11 @@ use futures::future::LocalBoxFuture;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use reqwest::Client;
 use serde::Deserialize;
+use crate::cache;
 use crate::repositories::DbContext;
 use crate::repositories::permissions::PermissionType;
 
+#[derive(Clone)]
 pub struct OidcConfiguration {
     pub admin_role: String,
     pub writer_role: String,
@@ -102,7 +104,12 @@ impl FromRequest for AuthUser {
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let oidc_config = req.app_data::<OidcConfiguration>().unwrap();
+        let oidc_config = req.app_data::<OidcConfiguration>()
+            .expect("OidcConfiguration must be configured")
+            .clone();
+        let jwks_cache = req.app_data::<cache::JwksCache>()
+            .expect("JwksCache must be configured")
+            .clone();
 
         let issuer = oidc_config.issuer.clone();
         let client_id = oidc_config.client_id.clone();
@@ -126,22 +133,30 @@ impl FromRequest for AuthUser {
                 Some(header) if header.starts_with("Bearer ") => {
                     let token = header.trim_start_matches("Bearer ").trim();
 
-                    // Fetch JWKS from issuer (remote)
-                    let jwks_url = format!("{}/.well-known/jwks.json", issuer);
-                    let jwks: serde_json::Value = Client::new()
-                        .get(&jwks_url)
-                        .send()
-                        .await
-                        .map_err(|e| ErrorUnauthorized(format!("Failed to fetch JWKS: {}", e)))?
-                        .json()
-                        .await
-                        .map_err(|e| ErrorUnauthorized(format!("Failed to parse JWKS: {}", e)))?;
+                    // Get JWKS from cache or fetch remotely
+                    let jwks = match jwks_cache.get(&issuer) {
+                        Some(cached) => cached,
+                        None => {
+                            let jwks_url = format!("{}/.well-known/jwks.json", issuer);
+                            let fetched: serde_json::Value = Client::new()
+                                .get(&jwks_url)
+                                .send()
+                                .await
+                                .map_err(|e| ErrorUnauthorized(format!("Failed to fetch JWKS: {}", e)))?
+                                .json()
+                                .await
+                                .map_err(|e| ErrorUnauthorized(format!("Failed to parse JWKS: {}", e)))?;
+                            jwks_cache.insert(&issuer, fetched.clone());
+                            fetched
+                        }
+                    };
 
-                    // Extract key id from token header
-                    let header = decode_header(token).map_err(|_| ErrorUnauthorized("Invalid token header"))?;
+                    // Decode token header to get `kid`
+                    let header = decode_header(token)
+                        .map_err(|_| ErrorUnauthorized("Invalid token header"))?;
                     let kid = header.kid.ok_or_else(|| ErrorUnauthorized("No kid in token header"))?;
 
-                    // Find the correct key in JWKS
+                    // Find the key in JWKS
                     let key_data = jwks["keys"]
                         .as_array()
                         .and_then(|keys| keys.iter().find(|k| k["kid"] == kid))
@@ -150,7 +165,10 @@ impl FromRequest for AuthUser {
                     let n = key_data["n"].as_str().ok_or_else(|| ErrorUnauthorized("Invalid key data"))?;
                     let e = key_data["e"].as_str().ok_or_else(|| ErrorUnauthorized("Invalid key data"))?;
 
-                    let decoding_key = DecodingKey::from_rsa_components(n, e).map_err(|_| ErrorUnauthorized("Failed to create decoding key"))?;
+                    // Build decoding key
+                    let decoding_key = DecodingKey::from_rsa_components(n, e)
+                        .map_err(|_| ErrorUnauthorized("Failed to create decoding key"))?;
+
                     let mut validation = Validation::new(Algorithm::RS256);
                     validation.set_audience(&[client_id.as_str()]);
                     validation.set_issuer(&[issuer.as_str()]);

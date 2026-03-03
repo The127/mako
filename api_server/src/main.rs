@@ -64,6 +64,7 @@ async fn main() -> std::io::Result<()> {
             .configure(init_app)
             .app_data(Data::new(con.clone()))
             .app_data(Data::new(cache::ValueCache::new()))
+            .app_data(Data::new(cache::JwksCache::new()))
             .app_data(Data::new(OidcConfiguration{
                 admin_role: cli.admin_role.clone(),
                 writer_role: cli.writer_role.clone(),
