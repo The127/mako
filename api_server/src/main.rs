@@ -3,6 +3,7 @@ pub mod cache;
 pub mod repositories;
 pub mod auth;
 
+use std::panic;
 use actix_web::web::Data;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use clap::Parser;
@@ -44,11 +45,17 @@ pub struct MakoCli {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    panic::set_hook(Box::new(|panic_info| {
+        eprintln!("💥 PANIC: {}", panic_info);
+    }));
+
     let env = Env::default()
         .filter_or("MAKO_LOG_LEVEL", "error")
         .write_style_or("MAKO_LOG_STYLE", "always");
 
     env_logger::init_from_env(env);
+
+    log::info!("Starting mako...");
 
     let cli = MakoCli::parse();
 
@@ -57,7 +64,7 @@ async fn main() -> std::io::Result<()> {
         .migrate(&con)
         .unwrap();
 
-    log::info!("Starting mako on {}:{}", cli.host, cli.port);
+    log::info!("Starting server on {}:{}", cli.host, cli.port);
 
     HttpServer::new(move || {
         App::new()

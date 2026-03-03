@@ -5,8 +5,9 @@
     <envs>
       <env name="MAKO_ADMIN_TOKEN" value="test" />
       <env name="MAKO_CLIENT_ID" value="admin-ui" />
-      <env name="MAKO_ISSUER" value="http://localhost:15081/oidc/keyline" />
       <env name="MAKO_DATABASE_CONNECTION" value="http://localhost:4003" />
+      <env name="MAKO_ISSUER" value="http://localhost:15081/oidc/keyline" />
+      <env name="MAKO_LOG_LEVEL" value="debug" />
     </envs>
     <option name="emulateTerminal" value="true" />
     <option name="channel" value="DEFAULT" />
