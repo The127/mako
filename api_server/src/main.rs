@@ -34,6 +34,12 @@ pub struct MakoCli {
 
     #[arg(long, default_value = "mako:reader", env = "MAKO_READER_ROLE")]
     reader_role: String,
+
+    #[arg(long, env = "MAKO_ISSUER")]
+    issuer: String,
+
+    #[arg(long, env = "MAKO_CLIENT_ID")]
+    client_id: String,
 }
 
 #[actix_web::main]
@@ -62,6 +68,8 @@ async fn main() -> std::io::Result<()> {
                 admin_role: cli.admin_role.clone(),
                 writer_role: cli.writer_role.clone(),
                 reader_role: cli.reader_role.clone(),
+                issuer: cli.issuer.clone(),
+                client_id: cli.client_id.clone(),           
             }))
     })
     .bind((cli.host, cli.port))?

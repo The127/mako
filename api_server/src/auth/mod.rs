@@ -12,6 +12,8 @@ pub struct OidcConfiguration {
     pub admin_role: String,
     pub writer_role: String,
     pub reader_role: String,
+    pub issuer: String,
+    pub client_id: String,
 }
 
 pub enum OperationType {
@@ -100,6 +102,11 @@ impl FromRequest for AuthUser {
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
+        let oidc_config = req.app_data::<OidcConfiguration>().unwrap();
+
+        let issuer = oidc_config.issuer.clone();
+        let client_id = oidc_config.client_id.clone();
+
         let auth_header = req
             .headers()
             .get("Authorization")
@@ -118,11 +125,6 @@ impl FromRequest for AuthUser {
 
                 Some(header) if header.starts_with("Bearer ") => {
                     let token = header.trim_start_matches("Bearer ").trim();
-
-                    let issuer = std::env::var("OIDC_ISSUER")
-                        .map_err(|_| ErrorUnauthorized("Missing OIDC_ISSUER"))?;
-                    let client_id = std::env::var("OIDC_CLIENT_ID")
-                        .map_err(|_| ErrorUnauthorized("Missing OIDC_CLIENT_ID"))?;
 
                     // Fetch JWKS from issuer (remote)
                     let jwks_url = format!("{}/.well-known/jwks.json", issuer);
