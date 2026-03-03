@@ -26,6 +26,15 @@ pub struct MakoCli {
 
     #[arg(long, default_value = "http://localhost:4003")]
     database_connection: String,
+
+    #[arg(long, default_value = "mako:admin", env = "MAKO_ADMIN_ROLE")]
+    admin_role: String,
+
+    #[arg(long, default_value = "mako:writer", env = "MAKO_WRITER_ROLE")]
+    writer_role: String,
+
+    #[arg(long, default_value = "mako:reader", env = "MAKO_READER_ROLE")]
+    reader_role: String,
 }
 
 #[actix_web::main]
@@ -51,9 +60,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(con.clone()))
             .app_data(Data::new(cache::Cache::new()))
             .app_data(Data::new(OidcConfiguration{
-                admin_role: "mako:admin".to_string(),
-                writer_role: "mako:writer".to_string(),
-                reader_role: "mako:reader".to_string(),
+                admin_role: cli.admin_role.clone(),
+                writer_role: cli.writer_role.clone(),
+                reader_role: cli.reader_role.clone(),
             }))
     })
     .bind((cli.host, cli.port))?
