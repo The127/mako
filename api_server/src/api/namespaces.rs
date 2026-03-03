@@ -1,4 +1,4 @@
-use crate::auth::user::AuthUser;
+use crate::auth::AuthUser;
 use crate::repositories::namespaces::Namespace;
 use crate::repositories::rqlite::new_context;
 use actix_web::{delete, get, put, web, HttpResponse};
