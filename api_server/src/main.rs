@@ -17,13 +17,13 @@ embed_migrations!(pub(crate) MyEmbeddedData("migrations"));
 #[command(name = "mako")]
 #[command(about = "The mako kv api binary.", long_about = None)]
 pub struct MakoCli {
-    #[arg(long, default_value = "0.0.0.0")]
+    #[arg(long, default_value = "0.0.0.0", env = "MAKO_HOST",)]
     host: String,
 
-    #[arg(long, default_value_t = 8080)]
+    #[arg(long, default_value_t = 8080, env = "MAKO_PORT")]
     port: u16,
 
-    #[arg(long, default_value = "http://localhost:4003")]
+    #[arg(long, env = "MAKO_DATABASE_CONNECTION")]
     database_connection: String,
 
     #[arg(long, default_value = "mako:admin", env = "MAKO_ADMIN_ROLE")]
