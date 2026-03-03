@@ -1,6 +1,8 @@
-use crate::extractors::auth::AuthUser;
+use user::AuthUser;
 use crate::repositories::DbContext;
 use crate::repositories::permissions::PermissionType;
+
+pub mod user;
 
 pub struct OidcConfiguration {
     pub admin_role: String,

@@ -1,5 +1,5 @@
 use crate::cache::Cache;
-use crate::extractors::auth::AuthUser;
+use crate::auth::user::AuthUser;
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
 use actix_web::http::header::IF_NONE_MATCH;

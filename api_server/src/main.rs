@@ -1,6 +1,5 @@
 pub mod api;
 pub mod cache;
-pub mod extractors;
 pub mod repositories;
 pub mod auth;
 
