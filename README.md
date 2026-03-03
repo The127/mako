@@ -2,6 +2,17 @@
 
 Mako is a lightweight, persistent key-value configuration store designed for modern distributed environments. It provides a secure, minimal, consistent config API without the complexity of etcd, Consul, or large distributed databases.
 
+Mako is built on top of [rqlite](https://github.com/rqlite/rqlite), a lightweight, distributed SQL database built on top of Raft.
+
+---
+
+## Feature complete
+
+Mako is considered **feature complete** and ready for production use.
+
+Bugfixes and security updates are applied as needed.
+New features will be considered for inclusion in the future if the need arises or if they are requested.
+
 ---
 
 ## 🎯 What Mako Solves
