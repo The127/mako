@@ -1,3 +1,5 @@
 - optimize oidc authentication logic (cache keys, ...)
 - read oidc config from settings
 - add oidc aud check
+- containerize
+- publish ghcr
