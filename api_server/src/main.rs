@@ -2,6 +2,7 @@ pub mod api;
 pub mod cache;
 pub mod extractors;
 pub mod repositories;
+pub mod auth;
 
 use actix_web::web::Data;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
@@ -9,6 +10,7 @@ use clap::Parser;
 use env_logger::Env;
 use rqlite_client::migration::Migration;
 use rqlite_client::{Connection, embed_migrations};
+use crate::auth::OidcConfiguration;
 
 embed_migrations!(pub(crate) MyEmbeddedData("migrations"));
 
@@ -48,6 +50,11 @@ async fn main() -> std::io::Result<()> {
             .configure(init_app)
             .app_data(Data::new(con.clone()))
             .app_data(Data::new(cache::Cache::new()))
+            .app_data(Data::new(OidcConfiguration{
+                admin_role: "mako:admin".to_string(),
+                writer_role: "mako:writer".to_string(),
+                reader_role: "mako:reader".to_string(),
+            }))
     })
     .bind((cli.host, cli.port))?
     .run()

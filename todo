@@ -1,2 +1,3 @@
-- add oidc authentication mapping
-- add acl checks
+- optimize oidc authentication logic (cache keys, ...)
+- read oidc config from settings
+- add oidc aud check

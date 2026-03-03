@@ -5,6 +5,8 @@ use crate::repositories::values::Value;
 use actix_web::http::header::IF_NONE_MATCH;
 use actix_web::{HttpRequest, HttpResponse, delete, get, put, web};
 use shared::dtos::values::{CreateValueDto, NamespacedKey, ValueDto};
+use crate::auth;
+use crate::auth::{OidcConfiguration, OperationType};
 
 #[put("/v1/kv/{path:.+}/{key}")]
 async fn set_value(
@@ -12,16 +14,13 @@ async fn set_value(
     request_dto: web::Json<CreateValueDto>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
-
     let mut ctx = new_context(con.into_inner());
+
+    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     ctx.values().set(Value::new(
         ns_key.path.clone(),
@@ -41,16 +40,13 @@ async fn get_value(
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
     cache: web::Data<Cache>,
+    oidc_config: web::Data<OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
-
     let ctx = new_context(con.into_inner());
+
+    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Read)? {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     if let Some(cached_value) = cache.get(&ns_key.path, &ns_key.key) {
         if let Some(db_version) = ctx.values().get_version(&ns_key.path, &ns_key.key)? {
@@ -107,16 +103,14 @@ async fn delete_value(
     ns_key: web::Path<NamespacedKey>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
-
     let mut ctx = new_context(con.into_inner());
+
+    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
+
 
     ctx.values().delete_if_exists(&ns_key.path, &ns_key.key);
 

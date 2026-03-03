@@ -43,6 +43,10 @@ impl Permission {
     pub fn permissions(&self) -> Vec<PermissionType> {
         self.permissions.clone()
     }
+    
+    pub fn has_permission(&self, permission: PermissionType) -> bool {
+        self.permissions.contains(&permission)
+    }  
 }
 
 pub trait PermissionRepository {

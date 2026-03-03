@@ -4,6 +4,8 @@
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <envs>
       <env name="MAKO_ADMIN_TOKEN" value="test" />
+      <env name="OIDC_ISSUER" value="http://localhost:15081/oidc/keyline" />
+      <env name="OIDC_CLIENT_ID" value="admin-ui" />
     </envs>
     <option name="emulateTerminal" value="true" />
     <option name="channel" value="DEFAULT" />

@@ -5,6 +5,8 @@ use actix_web::{HttpResponse, delete, get, put, web};
 use shared::dtos::namespaces::NamespacePath;
 use shared::dtos::permissions::{CreatePermissionDto, NamespacedSubject, PermissionDto, PermissionListDto};
 use std::str::FromStr;
+use crate::auth;
+use crate::auth::OperationType;
 
 impl From<Permission> for PermissionDto {
     fn from(value: Permission) -> Self {
@@ -26,14 +28,11 @@ async fn set_acl(
     request_dto: web::Json<CreatePermissionDto>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<auth::OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
+    if !auth::has_access(&user, oidc_config.as_ref(), OperationType::Admin) {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     let mut ctx = new_context(con.into_inner());
 
@@ -57,14 +56,11 @@ async fn get_acls(
     ns: web::Path<NamespacePath>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<auth::OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
+    if !auth::has_access(&user, oidc_config.as_ref(), OperationType::Admin) {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     let ctx = new_context(con.into_inner());
 
@@ -83,14 +79,11 @@ async fn get_acl(
     ns_subject: web::Path<NamespacedSubject>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<auth::OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
+    if !auth::has_access(&user, oidc_config.as_ref(), OperationType::Admin) {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     let ctx = new_context(con.into_inner());
 
@@ -109,14 +102,11 @@ async fn delete_acl(
     ns_subject: web::Path<NamespacedSubject>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
+    oidc_config: web::Data<auth::OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
-    match user {
-        AuthUser::Anonymous => return Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
-        AuthUser::Oidc { .. } => {
-            return Err(actix_web::error::ErrorUnauthorized("Unauthorized: TODO"));
-        }
-        AuthUser::Admin => (),
-    }
+    if !auth::has_access(&user, oidc_config.as_ref(), OperationType::Admin) {
+        return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
+    };
 
     let mut ctx = new_context(con.into_inner());
 

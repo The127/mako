@@ -26,6 +26,7 @@ initialVirtualServer:
   enableRegistration: false
   createAdmin: true
   createSystemAdminRole: true
+  signingAlgorithm: "RS256"
   admin:
     username: admin
     displayName: Admin

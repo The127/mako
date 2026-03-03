@@ -4,4 +4,5 @@ pub mod values;
 mod context;
 pub mod permissions;
 
+pub use context::DbContext;
 pub use context::DbError;
