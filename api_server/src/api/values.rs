@@ -1,4 +1,4 @@
-use crate::cache::Cache;
+use crate::cache::ValueCache;
 use crate::auth::AuthUser;
 use crate::repositories::rqlite::new_context;
 use crate::repositories::values::Value;
@@ -39,7 +39,7 @@ async fn get_value(
     ns_key: web::Path<NamespacedKey>,
     con: web::Data<rqlite_client::Connection>,
     user: AuthUser,
-    cache: web::Data<Cache>,
+    cache: web::Data<ValueCache>,
     oidc_config: web::Data<OidcConfiguration>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let ctx = new_context(con.into_inner());

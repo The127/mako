@@ -63,13 +63,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .configure(init_app)
             .app_data(Data::new(con.clone()))
-            .app_data(Data::new(cache::Cache::new()))
+            .app_data(Data::new(cache::ValueCache::new()))
             .app_data(Data::new(OidcConfiguration{
                 admin_role: cli.admin_role.clone(),
                 writer_role: cli.writer_role.clone(),
                 reader_role: cli.reader_role.clone(),
                 issuer: cli.issuer.clone(),
-                client_id: cli.client_id.clone(),           
+                client_id: cli.client_id.clone(),
             }))
     })
     .bind((cli.host, cli.port))?
