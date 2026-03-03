@@ -1,6 +1,7 @@
 use actix_web::{Error, FromRequest, HttpRequest};
 use actix_web::dev::Payload;
 use actix_web::error::ErrorUnauthorized;
+use actix_web::web::Data;
 use futures::future::LocalBoxFuture;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use reqwest::Client;
@@ -104,10 +105,10 @@ impl FromRequest for AuthUser {
     type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let oidc_config = req.app_data::<OidcConfiguration>()
+        let oidc_config = req.app_data::<Data<OidcConfiguration>>()
             .expect("OidcConfiguration must be configured")
             .clone();
-        let jwks_cache = req.app_data::<cache::JwksCache>()
+        let jwks_cache = req.app_data::<Data<cache::JwksCache>>()
             .expect("JwksCache must be configured")
             .clone();
 
