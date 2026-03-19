@@ -59,6 +59,9 @@ pub fn has_access_to_value(
         match user {
             AuthUser::Admin => Ok(true),
             AuthUser::Oidc { sub, roles } => {
+                if roles.contains(&oidc_config.admin_role) {
+                    return Ok(true);
+                }
                 let permission = ctx.permissions().get(sub, path)?;
                 match permission {
                     Some(permission) => {

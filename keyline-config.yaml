@@ -45,3 +45,10 @@ initialVirtualServer:
           description: "Mako Reader"
         - name: "writer"
           description: "Mako Writer"
+      applications:
+        - name: "mako"
+          description: "Mako application"
+          type: "public"
+          deviceFlowEnabled: true
+          redirectUris:
+            - "http://localhost"

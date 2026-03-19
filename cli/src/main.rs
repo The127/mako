@@ -5,14 +5,15 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use env_logger::Env;
 use mako_client::MakoApiClient;
-use mako_client::auth::ApiTokenAuthProvider;
+use mako_client::auth::{ApiTokenAuthProvider, BearerAuthProvider};
 use shared::dtos::permissions::PermissionType;
+use commands::auth::login::load_credentials;
 
 #[derive(Parser)]
 #[command(name = "mako", version = "v0.1.0", about = "The mako kv cli binary.", long_about = None)]
 struct Cli {
     #[clap(long, env = "MAKO_URL")]
-    pub url: String,
+    pub url: Option<String>,
 
     #[clap(long, short, env = "MAKO_FORMAT", default_value = "plain")]
     pub format: String,
@@ -23,6 +24,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Auth {
+        #[clap(subcommand)]
+        command: AuthCommands,
+    },
     Namespaces {
         #[clap(subcommand)]
         command: NamespaceCommands,
@@ -34,6 +39,16 @@ enum Commands {
     Acl {
         #[clap(subcommand)]
         command: AclCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum AuthCommands {
+    Login {
+        #[clap(long, env = "MAKO_OIDC_ISSUER")]
+        issuer: String,
+        #[clap(long, env = "MAKO_OIDC_CLIENT_ID")]
+        client_id: String,
     },
 }
 
@@ -92,54 +107,72 @@ async fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let admin_token = std::env::var("MAKO_ADMIN_TOKEN");
-    let client = match admin_token {
-        Ok(token) => MakoApiClient::new(cli.url, Box::new(ApiTokenAuthProvider::new(token))),
-        Err(_) => {
-            log::error!("No admin token found, set MAKO_ADMIN_TOKEN env variable");
+    // auth login doesn't need a client
+    if let Commands::Auth { command } = cli.command {
+        return match command {
+            AuthCommands::Login { issuer, client_id } => {
+                commands::auth::login::exec(issuer, client_id).await
+            }
+        };
+    }
+
+    let url = match cli.url {
+        Some(u) => u,
+        None => {
+            eprintln!("error: --url / MAKO_URL is required");
             std::process::exit(1);
         }
     };
 
+    let client = if let Ok(token) = std::env::var("MAKO_ADMIN_TOKEN") {
+        MakoApiClient::new(url, Box::new(ApiTokenAuthProvider::new(token)))
+    } else if let Some(creds) = load_credentials() {
+        MakoApiClient::new(url, Box::new(BearerAuthProvider::new(creds.access_token)))
+    } else {
+        eprintln!("error: not authenticated. Run `mako auth login` or set MAKO_ADMIN_TOKEN.");
+        std::process::exit(1);
+    };
+
     match cli.command {
+        Commands::Auth { .. } => unreachable!(),
         Commands::Namespaces { command } => match command {
             NamespaceCommands::Create { path } => {
                 commands::namespaces::create::exec(client, path).await
-            },
+            }
             NamespaceCommands::List => {
                 commands::namespaces::list::exec(client, cli.format).await
-            },
+            }
             NamespaceCommands::Kvs { path } => {
                 commands::namespaces::list_kvs::exec(client, path, cli.format).await
-            },
+            }
             NamespaceCommands::Delete { path } => {
                 commands::namespaces::delete::exec(client, path).await
-            },
+            }
         },
         Commands::Kv { command } => match command {
             KvCommands::Set { path, key, value } => {
                 commands::values::set::exec(client, path, key, value).await
-            },
+            }
             KvCommands::Get { path, key } => {
                 commands::values::get::exec(client, path, key, cli.format).await
-            },
+            }
             KvCommands::Delete { path, key } => {
                 commands::values::delete::exec(client, path, key).await
-            },
+            }
         },
         Commands::Acl { command } => match command {
-            AclCommands::Get {subject, path} => {
+            AclCommands::Get { subject, path } => {
                 commands::acl::get::exec(client, path, subject, cli.format).await
-            },
-            AclCommands::Delete {subject, path} => {
+            }
+            AclCommands::Delete { subject, path } => {
                 commands::acl::delete::exec(client, path, subject).await
-            },
-            AclCommands::List {path} => {
+            }
+            AclCommands::List { path } => {
                 commands::acl::list::exec(client, path, cli.format).await
-            },
-            AclCommands::Set {path, subject, permissions} => {
+            }
+            AclCommands::Set { path, subject, permissions } => {
                 commands::acl::set::exec(client, path, subject, permissions).await
-            },
-        }
+            }
+        },
     }
 }

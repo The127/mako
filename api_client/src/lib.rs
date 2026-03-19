@@ -3,6 +3,7 @@ pub mod errors;
 pub mod auth;
 pub mod values;
 pub mod acl;
+pub mod oidc;
 
 use reqwest::Client;
 
