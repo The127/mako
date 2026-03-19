@@ -27,7 +27,7 @@ jobs:
             runner: macos-latest
             asset: mako-macos-aarch64
           - target: x86_64-apple-darwin
-            runner: macos-13
+            runner: macos-latest
             asset: mako-macos-x86_64
           - target: x86_64-pc-windows-msvc
             runner: windows-latest
