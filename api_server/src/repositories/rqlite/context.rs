@@ -63,17 +63,14 @@ impl DbContext for DbContextImpl {
         let response_result = response::query::Query::from(query.request_run().unwrap());
 
         for mapping in response_result.into_iter() {
-            match mapping {
-                Mapping::Error(error) => {
-                    return if error.error.contains("FOREIGN KEY constraint failed") {
-                        Err(DbError::ForeignKeyViolation(error.error.clone()))
-                    } else if error.error.contains("UNIQUE constraint failed") {
-                        Err(DbError::UniqueViolation(error.error.clone()))
-                    } else {
-                        Err(DbError::Other(Box::new(error)))
-                    }
-                }
-                _ => (),
+            if let Mapping::Error(error) = mapping {
+                return if error.error.contains("FOREIGN KEY constraint failed") {
+                    Err(DbError::ForeignKeyViolation(error.error.clone()))
+                } else if error.error.contains("UNIQUE constraint failed") {
+                    Err(DbError::UniqueViolation(error.error.clone()))
+                } else {
+                    Err(DbError::Other(Box::new(error)))
+                };
             }
         }
 

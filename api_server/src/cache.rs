@@ -14,6 +14,12 @@ pub struct ValueCache {
     inner: Arc<DashMap<ValueCacheKey, ValueCachedValue>>,
 }
 
+impl Default for ValueCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ValueCache {
     pub fn new() -> Self {
         Self {
@@ -34,6 +40,12 @@ impl ValueCache {
 #[derive(Clone)]
 pub struct JwksCache {
     inner: Arc<DashMap<String, serde_json::Value>>, // issuer -> JWKS
+}
+
+impl Default for JwksCache {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl JwksCache {

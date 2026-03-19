@@ -18,7 +18,7 @@ async fn set_value(
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let mut ctx = new_context(con.into_inner());
 
-    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
+    if !auth::has_access_to_value(ctx.as_ref(), &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
         return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
     };
 
@@ -44,29 +44,28 @@ async fn get_value(
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let ctx = new_context(con.into_inner());
 
-    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Read)? {
+    if !auth::has_access_to_value(ctx.as_ref(), &ns_key.path, &user, oidc_config.as_ref(), OperationType::Read)? {
         return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
     };
 
-    if let Some(cached_value) = cache.get(&ns_key.path, &ns_key.key) {
-        if let Some(db_version) = ctx.values().get_version(&ns_key.path, &ns_key.key)? {
-            if cached_value.version == db_version {
-                let etag_value = format!("\"{}\"", cached_value.version);
-                if let Some(etag) = req.headers().get(IF_NONE_MATCH) {
-                    if etag.to_str().ok() == Some(&etag_value) {
-                        return Ok(HttpResponse::NotModified().finish());
-                    }
-                }
-
-                return Ok(HttpResponse::Ok()
-                    .insert_header((actix_web::http::header::ETAG, etag_value))
-                    .json(ValueDto {
-                        key: ns_key.key.clone(),
-                        value: cached_value.value.clone(),
-                        version: cached_value.version as u64,
-                    }));
-            }
+    if let Some(cached_value) = cache.get(&ns_key.path, &ns_key.key)
+        && let Some(db_version) = ctx.values().get_version(&ns_key.path, &ns_key.key)?
+        && cached_value.version == db_version
+    {
+        let etag_value = format!("\"{}\"", cached_value.version);
+        if let Some(etag) = req.headers().get(IF_NONE_MATCH)
+            && etag.to_str().ok() == Some(&etag_value)
+        {
+            return Ok(HttpResponse::NotModified().finish());
         }
+
+        return Ok(HttpResponse::Ok()
+            .insert_header((actix_web::http::header::ETAG, etag_value))
+            .json(ValueDto {
+                key: ns_key.key.clone(),
+                value: cached_value.value.clone(),
+                version: cached_value.version as u64,
+            }));
     }
 
     let value = ctx.values().get(&ns_key.path, &ns_key.key)?;
@@ -80,10 +79,10 @@ async fn get_value(
             );
 
             let etag_version = format!("\"{}\"", value.version());
-            if let Some(etag) = req.headers().get(IF_NONE_MATCH) {
-                if etag.to_str().ok() == Some(&etag_version) {
-                    return Ok(HttpResponse::NotModified().finish());
-                }
+            if let Some(etag) = req.headers().get(IF_NONE_MATCH)
+                && etag.to_str().ok() == Some(&etag_version)
+            {
+                return Ok(HttpResponse::NotModified().finish());
             }
 
             Ok(HttpResponse::Ok()
@@ -107,7 +106,7 @@ async fn delete_value(
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let mut ctx = new_context(con.into_inner());
 
-    if !auth::has_access_to_value(&ctx, &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
+    if !auth::has_access_to_value(ctx.as_ref(), &ns_key.path, &user, oidc_config.as_ref(), OperationType::Write)? {
         return Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
     };
 

@@ -10,7 +10,7 @@ struct NamespaceModel {
 }
 
 impl NamespaceModel {
-    fn scan(row: &Vec<serde_json::Value>) -> Self {
+    fn scan(row: &[serde_json::Value]) -> Self {
         let path = row[0].as_str().unwrap();
 
         NamespaceModel {
@@ -76,7 +76,7 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
             Some(Mapping::Standard(standard)) => {
                 if let Some(mapping) = &standard.values {
                     if let Some(row) = mapping.first() {
-                        Ok(Some(Namespace::from(NamespaceModel::scan(&row))))
+                        Ok(Some(Namespace::from(NamespaceModel::scan(row))))
                     }else {
                         Ok(None)
                     }
@@ -108,7 +108,7 @@ impl NamespaceRepository for NamespaceRepositoryImpl {
             Some(Mapping::Error(err)) => Err(Box::<dyn std::error::Error>::from(err)),
             Some(Mapping::Standard(standard)) => {
                 if let Some(mapping) = &standard.values {
-                    Ok(mapping.iter().map(|row| Namespace::from(NamespaceModel::scan(&row))).collect())
+                    Ok(mapping.iter().map(|row| Namespace::from(NamespaceModel::scan(row))).collect())
                 }else{
                     Ok(Vec::new())
                 }

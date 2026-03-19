@@ -34,15 +34,15 @@ impl MakoApiClient {
         req
     }
 
-    pub fn namespaces(&self) -> namespaces::NamespaceClient {
+    pub fn namespaces(&self) -> namespaces::NamespaceClient<'_> {
         namespaces::NamespaceClient::new(self)
     }
 
-    pub fn values(&self) -> values::ValueClient {
+    pub fn values(&self) -> values::ValueClient<'_> {
         values::ValueClient::new(self)
     }
 
-    pub fn acl(&self) -> acl::AclClient {
+    pub fn acl(&self) -> acl::AclClient<'_> {
         acl::AclClient::new(self)
     }
 }

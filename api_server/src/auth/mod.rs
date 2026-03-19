@@ -33,7 +33,7 @@ pub fn has_access(
 {
     match user {
         AuthUser::Admin => true,
-        AuthUser::Oidc { sub, roles } => {
+        AuthUser::Oidc { sub: _, roles } => {
             if roles.contains(&oidc_config.admin_role) {
                 true
             } else {
@@ -49,7 +49,7 @@ pub fn has_access(
 }
 
 pub fn has_access_to_value(
-    ctx: &Box<dyn DbContext>,
+    ctx: &dyn DbContext,
     path: &str,
     user: &AuthUser,
     oidc_config: &OidcConfiguration,
@@ -83,6 +83,7 @@ pub fn has_access_to_value(
 
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct Claims {
     sub: String,
     roles: Option<Vec<String>>,

@@ -13,7 +13,7 @@ struct ValueModel {
 }
 
 impl ValueModel {
-    fn scan(row: &Vec<serde_json::Value>) -> Self {
+    fn scan(row: &[serde_json::Value]) -> Self {
         let path = row[0].as_str().unwrap();
         let key = row[1].as_str().unwrap();
         let value = row[2].as_str().unwrap();
@@ -125,13 +125,12 @@ impl ValueRepository for ValueRepositoryImpl {
 
         let response_result = response::query::Query::from(query.request_run()?);
 
-        if let Some(Mapping::Standard(standard)) = response_result.into_iter().next() {
-            if let Some(mapping) = &standard.values {
-                if let Some(row) = mapping.first() {
-                    let version = row[0].as_i64().unwrap();
-                    return Ok(Some(version));
-                }
-            }
+        if let Some(Mapping::Standard(standard)) = response_result.into_iter().next()
+            && let Some(mapping) = &standard.values
+            && let Some(row) = mapping.first()
+        {
+            let version = row[0].as_i64().unwrap();
+            return Ok(Some(version));
         }
 
         Ok(None)

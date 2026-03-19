@@ -4,14 +4,16 @@ pub enum PermissionType {
     Write,
 }
 
-impl PermissionType {
-    pub fn to_string(&self) -> String {
+impl std::fmt::Display for PermissionType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PermissionType::Read => "read".to_string(),
-            PermissionType::Write => "write".to_string(),
+            PermissionType::Read => write!(f, "read"),
+            PermissionType::Write => write!(f, "write"),
         }
     }
+}
 
+impl PermissionType {
     pub fn from_string(s: &str) -> Option<PermissionType> {
         match s {
             "read" => Some(PermissionType::Read),

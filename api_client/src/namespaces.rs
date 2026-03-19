@@ -53,7 +53,7 @@ impl<'a> NamespaceClient<'a> {
 
         let resp = self
             .client
-            .request(reqwest::Method::GET, &url)
+            .request(reqwest::Method::GET, url)
             .send()
             .await?;
 

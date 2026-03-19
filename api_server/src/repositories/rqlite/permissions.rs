@@ -12,7 +12,7 @@ struct PermissionModel {
 }
 
 impl PermissionModel {
-    fn scan(row: &Vec<serde_json::Value>) -> Self {
+    fn scan(row: &[serde_json::Value]) -> Self {
         let subject_id = row[0].as_str().unwrap();
         let path = row[1].as_str().unwrap();
         let permissions = row[2].as_str().unwrap();

@@ -42,6 +42,12 @@ pub struct OidcClient {
     client: Client,
 }
 
+impl Default for OidcClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OidcClient {
     pub fn new() -> Self {
         Self { client: Client::new() }

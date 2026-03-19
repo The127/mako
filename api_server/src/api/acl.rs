@@ -69,7 +69,7 @@ async fn get_acls(
     Ok(HttpResponse::Ok().json(PermissionListDto {
         permissions: permissions
             .into_iter()
-            .map(|p| PermissionDto::from(p))
+            .map(PermissionDto::from)
             .collect(),
     }))
 }
