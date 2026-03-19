@@ -2,6 +2,7 @@
 members = [
     "api_server",
     "api_client",
-    "cli", 
+    "cli",
     "shared"
 ]
+resolver = "3"
