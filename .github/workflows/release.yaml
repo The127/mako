@@ -49,6 +49,7 @@ jobs:
   build-cli:
     name: Build CLI (${{ matrix.target }})
     runs-on: ${{ matrix.runner }}
+    needs: publish-image
     strategy:
       matrix:
         include:
