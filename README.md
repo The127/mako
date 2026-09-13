@@ -225,3 +225,11 @@ mako --format json kv get myapp version
 - Massive-scale distributed data replication beyond config
 - Advanced coordination primitives (leader election, locks, etc.)
 - Heavy transactional workloads
+
+## 📄 License
+
+The Mako server in [`api_server/`](api_server/) is licensed under the [GNU AGPL v3](LICENSE).
+
+The CLI in [`cli/`](cli/), the client library in [`api_client/`](api_client/) and the
+DTO crate in [`shared/`](shared/) are licensed under the [MIT License](api_client/LICENSE)
+so they can be embedded in any application without AGPL obligations.

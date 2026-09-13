@@ -2,6 +2,8 @@
 name = "mako_cli"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/The127/mako"
 
 [dependencies]
 clap = { version = "4.5.60", features = ["derive", "env"] }
