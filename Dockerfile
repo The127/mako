@@ -24,7 +24,9 @@ COPY api_client/ api_client/
 COPY cli/ cli/
 COPY shared/ shared/
 
-RUN touch api_server/src/main.rs && cargo build --release --bin mako
+# Touch every crate root so cargo rebuilds them instead of reusing the stubs above
+RUN touch api_server/src/main.rs api_client/src/lib.rs cli/src/main.rs shared/src/lib.rs && \
+    cargo build --release --bin mako
 
 
 FROM debian:bookworm-slim
